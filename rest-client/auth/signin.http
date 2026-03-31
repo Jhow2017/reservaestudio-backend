@@ -1,0 +1,106 @@
+### ======================================================
+### STAGEFLOW - TESTES DE LOGIN (/auth/signin)
+### ======================================================
+
+@baseUrl = http://localhost:4000
+@email = jhowgama21@gmail.com
+@password = senha123
+@accessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyMjNlODUzMi01MmFhLTRkZjEtYTllNi1jMzU2NTczODNkMTkiLCJpYXQiOjE3NzQ5MjA4MTIsImV4cCI6MTc3NTUyNTYxMn0.i5GcY2aTGj0EIoYRWMQfQUmCXkBsvW_g_E28uSqmntI
+
+
+### Pré-requisito
+### 1) Subir API: yarn start
+### 2) Garantir que o usuário de teste exista (via /auth/signup)
+
+### @name loginSuccessUser
+### ✅ Login com credenciais válidas (usuário comum)
+POST {{baseUrl}}/auth/signin
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+### @name loginSuccessAdmin
+### ✅ Login com credenciais válidas (admin)
+POST {{baseUrl}}/auth/signin
+Content-Type: application/json
+
+{
+  "email": "admin@email.com",
+  "password": "senhaAdmin123"
+}
+
+### ❌ Sem email (erro de validação)
+POST {{baseUrl}}/auth/signin
+Content-Type: application/json
+
+{
+  "password": "senha123"
+}
+
+### ❌ Sem senha (erro de validação)
+POST {{baseUrl}}/auth/signin
+Content-Type: application/json
+
+{
+  "email": "joao@email.com"
+}
+
+### ❌ Email inválido (erro de validação)
+POST {{baseUrl}}/auth/signin
+Content-Type: application/json
+
+{
+  "email": "email-invalido",
+  "password": "senha123"
+}
+
+### ❌ Senha muito curta (erro de validação)
+POST {{baseUrl}}/auth/signin
+Content-Type: application/json
+
+{
+  "email": "joao@email.com",
+  "password": "123"
+}
+
+### ❌ Usuário inexistente (erro de negócio)
+POST {{baseUrl}}/auth/signin
+Content-Type: application/json
+
+{
+  "email": "naoexiste@email.com",
+  "password": "senha123"
+}
+
+### ❌ Senha incorreta (erro de negócio)
+POST {{baseUrl}}/auth/signin
+Content-Type: application/json
+
+{
+  "email": "joao@email.com",
+  "password": "senhaErrada"
+}
+
+### ❌ Campos extras (forbidNonWhitelisted)
+POST {{baseUrl}}/auth/signin
+Content-Type: application/json
+
+{
+  "email": "joao@email.com",
+  "password": "senha123",
+  "campoExtra": "nao-permitido"
+}
+
+### ⚠️ Teste de Rate Limit (brute force)
+### Execute essa request 6x em menos de 1 minuto.
+### Esperado: as primeiras tentativas falham com 401 e a 6a com 429.
+POST {{baseUrl}}/auth/signin
+Content-Type: application/json
+
+{
+  "email": "joao@email.com",
+  "password": "senhaErrada"
+}

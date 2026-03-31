@@ -1,0 +1,99 @@
+### ======================================================
+### STAGEFLOW - TESTES DE CADASTRO (/auth/signup)
+### ======================================================
+
+@baseUrl = http://localhost:4000
+@newUserEmail = teste.signup.{{$timestamp}}@email.com
+
+### Pré-requisito
+### 1) Subir API: yarn start
+### 2) Banco com migrações aplicadas
+
+### @name signupSuccess
+### ✅ Cadastro com dados válidos
+POST {{baseUrl}}/auth/signup
+Content-Type: application/json
+
+{
+  "name": "Jhow Gama",
+  "email": "{{newUserEmail}}",
+  "password": "senha123"
+}
+
+### ❌ Sem nome (erro de validação)
+POST {{baseUrl}}/auth/signup
+Content-Type: application/json
+
+{
+  "email": "usuario.sem.nome@email.com",
+  "password": "senha123"
+}
+
+### ❌ Sem email (erro de validação)
+POST {{baseUrl}}/auth/signup
+Content-Type: application/json
+
+{
+  "name": "Usuario Sem Email",
+  "password": "senha123"
+}
+
+### ❌ Sem senha (erro de validação)
+POST {{baseUrl}}/auth/signup
+Content-Type: application/json
+
+{
+  "name": "Usuario Sem Senha",
+  "email": "usuario.sem.senha@email.com"
+}
+
+### ❌ Email inválido (erro de validação)
+POST {{baseUrl}}/auth/signup
+Content-Type: application/json
+
+{
+  "name": "Email Invalido",
+  "email": "email-invalido",
+  "password": "senha123"
+}
+
+### ❌ Senha curta (erro de validação)
+POST {{baseUrl}}/auth/signup
+Content-Type: application/json
+
+{
+  "name": "Senha Curta",
+  "email": "senha.curta@email.com",
+  "password": "12345"
+}
+
+### ❌ Email já cadastrado (erro de negócio)
+POST {{baseUrl}}/auth/signup
+Content-Type: application/json
+
+{
+  "name": "Duplicado 1",
+  "email": "duplicado.signup@email.com",
+  "password": "senha123"
+}
+
+### ❌ Repetindo o mesmo email (deve falhar por duplicidade)
+POST {{baseUrl}}/auth/signup
+Content-Type: application/json
+
+{
+  "name": "Duplicado 2",
+  "email": "duplicado.signup@email.com",
+  "password": "outraSenha123"
+}
+
+### ❌ Campo extra (forbidNonWhitelisted)
+POST {{baseUrl}}/auth/signup
+Content-Type: application/json
+
+{
+  "name": "Campo Extra",
+  "email": "campo.extra@email.com",
+  "password": "senha123",
+  "role": "ADMIN"
+}
