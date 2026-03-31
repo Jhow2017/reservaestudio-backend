@@ -3,8 +3,8 @@
 ### ======================================================
 
 @baseUrl = http://localhost:4000
-@ownerToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyMjNlODUzMi01MmFhLTRkZjEtYTllNi1jMzU2NTczODNkMTkiLCJpYXQiOjE3NzQ5ODUxNzAsImV4cCI6MTc3NTU4OTk3MH0.2F9Y3iSVRYwE9pCdWwB96BoCCHteSnEqss5tRKd2mAI
-@studioId = REPLACE_STUDIO_ID
+@ownerToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyZWFjNzc4My1iMTA1LTQwOGUtOGRmMC0zY2EzMmQ3N2RiNjAiLCJpYXQiOjE3NzQ5OTEwODgsImV4cCI6MTc3NTU5NTg4OH0.fAd3oDiDBrdaqAl-Go4ArpHdlw9qw1TMrjUeDhy1nyM
+@studioId = e481b7d8-d016-45ee-99a4-6ddab4d65900
 
 ### ✅ Listar studios globais (somente OWNER)
 GET {{baseUrl}}/admin/studios

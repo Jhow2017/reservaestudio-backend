@@ -3,11 +3,11 @@
 ### ======================================================
 
 @baseUrl = http://localhost:4000
-@email = jhowgama21@gmail.com
+@email = jhongama_jesus@hotmail.com
 @password = senha123
 @ownerEmail = jhongama_jesus@hotmail.com
 @ownerPassword = Senha132
-@accessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyMjNlODUzMi01MmFhLTRkZjEtYTllNi1jMzU2NTczODNkMTkiLCJpYXQiOjE3NzQ5MjA4MTIsImV4cCI6MTc3NTUyNTYxMn0.i5GcY2aTGj0EIoYRWMQfQUmCXkBsvW_g_E28uSqmntI
+@accessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyZWFjNzc4My1iMTA1LTQwOGUtOGRmMC0zY2EzMmQ3N2RiNjAiLCJpYXQiOjE3NzQ5ODgwODMsImV4cCI6MTc3NTU5Mjg4M30.JCHxCUH8O80g5MNHmMt-FEsgVMMhPQWxUQqZIJR9xlg
 
 
 ### Pré-requisito

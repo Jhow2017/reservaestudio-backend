@@ -4,7 +4,7 @@
 
 @baseUrl = http://localhost:4000
 @adminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyMjNlODUzMi01MmFhLTRkZjEtYTllNi1jMzU2NTczODNkMTkiLCJpYXQiOjE3NzQ5ODUxNzAsImV4cCI6MTc3NTU4OTk3MH0.2F9Y3iSVRYwE9pCdWwB96BoCCHteSnEqss5tRKd2mAI
-@studioId = REPLACE_STUDIO_ID
+@studioId = e481b7d8-d016-45ee-99a4-6ddab4d65900
 
 ### ✅ Criar Sala A
 POST {{baseUrl}}/settings/studios/{{studioId}}/rooms
