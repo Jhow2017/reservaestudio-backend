@@ -1,6 +1,9 @@
 import { Body, Controller, Param, Post, UseGuards } from '@nestjs/common';
+import { Req } from '@nestjs/common';
+import { Request } from 'express';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateStudioRoomFromSettingsUseCase } from '../../../domain/booking/application/use-cases/create-studio-room-from-settings';
+import { User } from '../../../domain/auth/enterprise/entities/user';
 import { AdminGuard } from '../../auth/admin.guard';
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 import { CreateSettingsRoomDto } from '../dtos/create-settings-room.dto';
@@ -22,10 +25,14 @@ export class SettingsRoomsController {
     @ApiResponse({ status: 409, description: 'Limite de salas do plano atingido' })
     async create(
         @Param('studioId') studioId: string,
+        @Req() req: Request,
         @Body() body: CreateSettingsRoomDto,
     ) {
+        const user = req.user as User;
         const { room } = await this.createStudioRoomFromSettingsUseCase.execute({
             studioId,
+            requesterUserId: user.id.toString(),
+            requesterRole: user.role,
             name: body.name,
             type: body.type,
             description: body.description,

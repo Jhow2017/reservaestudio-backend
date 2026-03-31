@@ -1,6 +1,7 @@
 import { Studio } from '../../enterprise/entities/studio';
 
 export interface CreateStudioRequest {
+    ownerUserId?: string | null;
     name: string;
     slug: string;
     planTier: 'STARTER' | 'PROFESSIONAL' | 'ENTERPRISE';

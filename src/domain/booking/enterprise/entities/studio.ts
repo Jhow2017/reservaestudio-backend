@@ -2,6 +2,7 @@ import { Entity } from '../../../../core/entities/entity';
 import { UniqueEntityID } from '../../../../core/entities/unique-entity-id';
 
 export interface StudioProps {
+    ownerUserId: string | null;
     name: string;
     slug: string;
     planTier: 'STARTER' | 'PROFESSIONAL' | 'ENTERPRISE';
@@ -15,6 +16,10 @@ export interface StudioProps {
 }
 
 export class Studio extends Entity<StudioProps> {
+    get ownerUserId(): string | null {
+        return this.props.ownerUserId;
+    }
+
     get name(): string {
         return this.props.name;
     }
@@ -56,6 +61,7 @@ export class Studio extends Entity<StudioProps> {
     }
 
     update(data: {
+        ownerUserId: string | null;
         name: string;
         slug: string;
         planTier: 'STARTER' | 'PROFESSIONAL' | 'ENTERPRISE';
@@ -65,6 +71,7 @@ export class Studio extends Entity<StudioProps> {
         closeHour: number;
         timezone: string;
     }): void {
+        this.props.ownerUserId = data.ownerUserId;
         this.props.name = data.name;
         this.props.slug = data.slug;
         this.props.planTier = data.planTier;

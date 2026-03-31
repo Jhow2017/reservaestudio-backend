@@ -3,9 +3,13 @@ import { UseCaseError } from '../../../../core/errors/use-case-error';
 import { Room } from '../../enterprise/entities/room';
 import { RoomsRepository } from '../repositories/rooms-repository';
 import { StudiosRepository } from '../repositories/studios-repository';
+import { Role } from '../../../auth/enterprise/value-objects/role';
+import { ensureStudioAdminAccess } from './studio-admin-access';
 
 export interface CreateStudioRoomFromSettingsRequest {
     studioId: string;
+    requesterUserId: string;
+    requesterRole: Role;
     name: string;
     type: string;
     description: string;
@@ -62,6 +66,7 @@ export class CreateStudioRoomFromSettingsUseCase {
         if (!studio) {
             throw new StudioNotFoundError();
         }
+        ensureStudioAdminAccess(studio, data.requesterRole, data.requesterUserId);
 
         const roomLimit = getPlanRoomLimit(studio.planTier);
         if (roomLimit !== null) {

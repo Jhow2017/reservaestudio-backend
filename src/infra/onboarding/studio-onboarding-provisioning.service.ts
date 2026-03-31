@@ -49,6 +49,7 @@ export class StudioOnboardingProvisioningService implements StudioProvisioningSe
         }
 
         const studio = await this.studiosRepository.create({
+            ownerUserId,
             name: session.studioName,
             slug: session.subdomain ?? `studio-${session.id.toString().slice(0, 8)}`,
             planTier: session.planTier,

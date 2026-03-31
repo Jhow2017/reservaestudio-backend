@@ -8,6 +8,7 @@ export class PrismaStudioMapper {
     static toDomain(raw: PrismaStudio): Studio {
         return Studio.create(
             {
+                ownerUserId: raw.ownerUserId,
                 name: raw.name,
                 slug: raw.slug,
                 planTier: raw.planTier,

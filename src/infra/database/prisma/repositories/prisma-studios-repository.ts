@@ -36,6 +36,7 @@ export class PrismaStudiosRepository implements StudiosRepository {
     async create(data: CreateStudioRequest): Promise<Studio> {
         const studio = await this.prisma.studio.create({
             data: {
+                ownerUserId: data.ownerUserId ?? null,
                 name: data.name,
                 slug: data.slug,
                 planTier: data.planTier,
@@ -54,6 +55,7 @@ export class PrismaStudiosRepository implements StudiosRepository {
         const studio = await this.prisma.studio.update({
             where: { id: data.id },
             data: {
+                ownerUserId: data.ownerUserId ?? null,
                 name: data.name,
                 slug: data.slug,
                 planTier: data.planTier,

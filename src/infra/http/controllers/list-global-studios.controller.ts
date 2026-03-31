@@ -25,6 +25,7 @@ export class ListGlobalStudiosController {
         return {
             studios: studios.map((item) => ({
                 id: item.studio.id.toString(),
+                ownerUserId: item.studio.ownerUserId,
                 name: item.studio.name,
                 slug: item.studio.slug,
                 planTier: item.studio.planTier,
@@ -50,6 +51,7 @@ export class ListGlobalStudiosController {
         return {
             studio: {
                 id: studio.studio.id.toString(),
+                ownerUserId: studio.studio.ownerUserId,
                 name: studio.studio.name,
                 slug: studio.studio.slug,
                 planTier: studio.studio.planTier,

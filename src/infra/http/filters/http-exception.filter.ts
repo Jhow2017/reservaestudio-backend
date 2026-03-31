@@ -78,6 +78,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
             return HttpStatus.FORBIDDEN;
         }
 
+        if (exception.constructor.name === 'StudioAccessDeniedError') {
+            return HttpStatus.FORBIDDEN;
+        }
+
         if (exception.constructor.name === 'UserAlreadyExistsError') {
             return HttpStatus.CONFLICT;
         }

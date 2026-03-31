@@ -25,12 +25,14 @@ model User {
     createdAt            DateTime  @default(now())
     updatedAt            DateTime  @updatedAt
     clients              Client[]
+    ownedStudios         Studio[]  @relation("StudioOwner")
 
     @@map("users")
 }
 
 model Studio {
     id         String    @id @default(uuid())
+    ownerUserId String?
     name       String
     slug       String    @unique
     planTier   PlanTier  @default(STARTER)
@@ -44,7 +46,9 @@ model Studio {
     rooms      Room[]
     clients    Client[]
     bookings   Booking[]
+    owner      User?     @relation("StudioOwner", fields: [ownerUserId], references: [id], onDelete: SetNull)
 
+    @@index([ownerUserId])
     @@map("studios")
 }
 

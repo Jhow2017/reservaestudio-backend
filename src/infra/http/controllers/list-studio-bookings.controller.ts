@@ -1,8 +1,10 @@
-import { Controller, Get, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Req, UseGuards } from '@nestjs/common';
+import { Request } from 'express';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ListStudioBookingsUseCase } from '../../../domain/booking/application/use-cases/list-studio-bookings';
 import { AdminGuard } from '../../auth/admin.guard';
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
+import { User } from '../../../domain/auth/enterprise/entities/user';
 
 @ApiTags('Bookings Admin')
 @Controller('/admin/studio-ops/:studioSlug/bookings')
@@ -38,8 +40,13 @@ export class ListStudioBookingsController {
     @ApiResponse({ status: 401, description: 'Não autenticado' })
     @ApiResponse({ status: 403, description: 'Acesso negado (apenas admin)' })
     @ApiResponse({ status: 404, description: 'Studio não encontrado' })
-    async handle(@Param('studioSlug') studioSlug: string) {
-        const { bookings } = await this.listStudioBookingsUseCase.execute({ studioSlug });
+    async handle(@Param('studioSlug') studioSlug: string, @Req() req: Request) {
+        const user = req.user as User;
+        const { bookings } = await this.listStudioBookingsUseCase.execute({
+            studioSlug,
+            requesterUserId: user.id.toString(),
+            requesterRole: user.role,
+        });
 
         return {
             bookings: bookings.map((booking) => ({
