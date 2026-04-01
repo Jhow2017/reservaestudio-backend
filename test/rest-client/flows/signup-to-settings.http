@@ -12,11 +12,13 @@
 ### ======================================================
 
 @baseUrl = http://localhost:4000  
-@ownerToken = REPLACE_OWNER_TOKEN
+@ownerToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3OWQ2OTA3Mi04MjMzLTQ2NjUtOWUzMi0wZGJmMTk2NjZmY2EiLCJpYXQiOjE3NzUwMTI4NDUsImV4cCI6MTc3NTYxNzY0NX0.lZX2Vj3wCXxnQaz90V7_X3-RLyODO9BgQUPFjVJGopo
 @subscriberEmail = contato@rockvalley.com.br
-@subscriberPassword = REPLACE_SUBSCRIBER_PASSWORD
-@subdomain = rockvalley-{{$timestamp}}
-@checkoutId = 8b350962-afb9-4157-8b01-71fc4a8c7f6a
+@subscriberPassword = 123456
+@subdomain = rock-valley
+@checkoutId = abffa52b-3b91-4a75-b058-3bdbc471d925
+@subscriberToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1MDQ2M2I2My1mNzU0LTRhNzYtYWQzMS04MDhhNDM3MmNlZjkiLCJpYXQiOjE3NzUwMTI2NTEsImV4cCI6MTc3NTYxNzQ1MX0.lHXjlEc3IX3v4GGiaUQ-ifWWwl104pLH6e_ZwOtv260
+@studioId = 88ae4172-2338-41c3-a83c-3936b0132d29
 
 ### ------------------------------------------------------
 ### PASSO 1-5: LOGIN ASSINANTE + START CHECKOUT DE ASSINATURA
@@ -32,7 +34,7 @@ Content-Type: application/json
 
 ### @name startCheckout
 POST {{baseUrl}}/subscription-checkout/start
-Authorization: Bearer {{loginStudioSubscriber.response.body.accessToken}}
+Authorization: Bearer {{subscriberToken}}
 Content-Type: application/json
 
 {
@@ -50,7 +52,7 @@ Content-Type: application/json
 ### ------------------------------------------------------
 
 GET {{baseUrl}}/subscription-checkout/{{checkoutId}}
-Authorization: Bearer {{loginStudioSubscriber.response.body.accessToken}}
+Authorization: Bearer {{subscriberToken}}
 
 ### ------------------------------------------------------
 ### PASSO 6: CONFIRMAR PAGAMENTO (SIMULADO, PROTEGIDO)
@@ -73,8 +75,8 @@ Content-Type: application/json
 ### PASSO 8: SETTINGS -> CADASTRAR SALAS
 ### Para PROFESSIONAL: até 3 salas.
 ### ------------------------------------------------------
-POST {{baseUrl}}/settings/studios/{{approveCheckout.response.body.checkout.studioId}}/rooms
-Authorization: Bearer {{loginStudioSubscriber.response.body.accessToken}}
+POST {{baseUrl}}/settings/studios/{{studioId}}/rooms
+Authorization: Bearer {{subscriberToken}}
 Content-Type: application/json
 
 {
@@ -86,8 +88,10 @@ Content-Type: application/json
   "features": ["Bateria acústica", "PA 1000W"]
 }
 
-POST {{baseUrl}}/settings/studios/{{approveCheckout.response.body.checkout.studioId}}/rooms
-Authorization: Bearer {{loginStudioSubscriber.response.body.accessToken}}
+### @name createRoomB
+### ✅ Criar Sala B
+POST {{baseUrl}}/settings/studios/{{studioId}}/rooms
+Authorization: Bearer {{subscriberToken}}
 Content-Type: application/json
 
 {
@@ -99,8 +103,10 @@ Content-Type: application/json
   "features": ["Mesa digital", "Microfones premium"]
 }
 
-POST {{baseUrl}}/settings/studios/{{approveCheckout.response.body.checkout.studioId}}/rooms
-Authorization: Bearer {{loginStudioSubscriber.response.body.accessToken}}
+### @name createRoomC
+### ✅ Criar Sala C
+POST {{baseUrl}}/settings/studios/{{studioId}}/rooms
+Authorization: Bearer {{subscriberToken}}
 Content-Type: application/json
 
 {
@@ -115,8 +121,8 @@ Content-Type: application/json
 ### ------------------------------------------------------
 ### EXTRA: VALIDAR LIMITE DE PLANO (4a sala -> 409 no PROFESSIONAL)
 ### ------------------------------------------------------
-POST {{baseUrl}}/settings/studios/{{approveCheckout.response.body.checkout.studioId}}/rooms
-Authorization: Bearer {{loginStudioSubscriber.response.body.accessToken}}
+POST {{baseUrl}}/settings/studios/{{studioId}}/rooms
+Authorization: Bearer {{subscriberToken}}
 Content-Type: application/json
 
 {

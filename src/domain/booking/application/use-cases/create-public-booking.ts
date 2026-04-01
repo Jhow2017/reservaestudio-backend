@@ -4,6 +4,8 @@ import { UseCaseError } from '../../../../core/errors/use-case-error';
 import { Role } from '../../../auth/enterprise/value-objects/role';
 import { User } from '../../../auth/enterprise/entities/user';
 import { HashGenerator } from '../../../auth/application/cryptography/hash-generator';
+import { ResetPasswordTokenGenerator } from '../../../auth/application/cryptography/reset-password-token-generator';
+import { EmailSender } from '../../../auth/application/messaging/email-sender';
 import { UsersRepository } from '../../../auth/application/repositories/users-repository';
 import { Booking, BookingStatus, PaymentMethod } from '../../enterprise/entities/booking';
 import { BookingsRepository } from '../repositories/bookings-repository';
@@ -83,6 +85,10 @@ export class CreatePublicBookingUseCase {
         private usersRepository: UsersRepository,
         @Inject(HashGenerator)
         private hashGenerator: HashGenerator,
+        @Inject(ResetPasswordTokenGenerator)
+        private resetPasswordTokenGenerator: ResetPasswordTokenGenerator,
+        @Inject(EmailSender)
+        private emailSender: EmailSender,
     ) { }
 
     async execute({
@@ -143,6 +149,7 @@ export class CreatePublicBookingUseCase {
 
         let accountCreated = false;
         let userId: string | null = null;
+        let createdUserForInvite: User | null = null;
 
         if (createAccount) {
             const existingUser = await this.usersRepository.findByEmail(customerEmail);
@@ -163,9 +170,17 @@ export class CreatePublicBookingUseCase {
                     resetPasswordExpires: null,
                 });
 
+                const setupPasswordToken = await this.resetPasswordTokenGenerator.generate(
+                    user.id.toString(),
+                );
+                const expiresAt = new Date();
+                expiresAt.setHours(expiresAt.getHours() + 1);
+                user.setResetPasswordToken(setupPasswordToken, expiresAt);
+
                 await this.usersRepository.create(user);
                 userId = user.id.toString();
                 accountCreated = true;
+                createdUserForInvite = user;
             }
         }
 
@@ -195,6 +210,23 @@ export class CreatePublicBookingUseCase {
         });
 
         await this.bookingsRepository.create(booking);
+
+        if (accountCreated && createdUserForInvite) {
+            // Best effort: booking should not fail if email provider is temporarily unavailable.
+            try {
+                const setupPasswordToken = createdUserForInvite.resetPasswordToken;
+                if (!setupPasswordToken) {
+                    throw new Error('Reset password token was not generated for invited user');
+                }
+                await this.emailSender.sendResetPasswordEmail(
+                    createdUserForInvite.email,
+                    createdUserForInvite.name,
+                    setupPasswordToken,
+                );
+            } catch (error) {
+                console.error('Erro ao enviar email de criacao de senha:', error);
+            }
+        }
 
         return {
             booking,

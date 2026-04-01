@@ -18,7 +18,7 @@ Content-Type: application/json
   "billingCycle": "ANNUAL",
   "studioName": "Rock Valley Studio",
   "domainType": "SUBDOMAIN",
-  "subdomain": "rockvalley-{{$timestamp}}",
+  "subdomain": "rock-valley-studio",
   "paymentMethod": "CARD",
   "totalAmount": 1970
 }
@@ -69,7 +69,7 @@ Content-Type: application/json
   "billingCycle": "MONTHLY",
   "studioName": "Outro Studio",
   "domainType": "SUBDOMAIN",
-  "subdomain": "rockvalley",
+  "subdomain": "rock-valley",
   "paymentMethod": "PIX",
   "totalAmount": 80
 }

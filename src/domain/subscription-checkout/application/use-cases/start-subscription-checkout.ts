@@ -36,6 +36,38 @@ export class SubdomainUnavailableError extends UseCaseError {
     constructor() { super('Subdomain is not available'); }
 }
 
+const FINAL_SUBDOMAIN_REGEX = /^[a-z]+(?:-[a-z]+)*$/;
+
+function applySuffixHeuristics(value: string): string {
+    if (value.includes('-')) return value;
+
+    const suffixes = ['studio', 'music', 'audio', 'sonic'];
+    for (const suffix of suffixes) {
+        if (value.endsWith(suffix) && value.length > suffix.length + 1) {
+            const prefix = value.slice(0, -suffix.length);
+            return `${prefix}-${suffix}`;
+        }
+    }
+
+    return value;
+}
+
+function normalizeSubdomain(raw: string): string {
+    const camelSeparated = raw.replace(/([a-z])([A-Z])/g, '$1-$2');
+    const withoutAccents = camelSeparated
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+
+    const lower = withoutAccents.toLowerCase();
+    const onlyLettersSpacesHyphen = lower.replace(/[^a-z\s-]/g, '');
+    const withSuffixHeuristics = applySuffixHeuristics(onlyLettersSpacesHyphen.replace(/\s+/g, ''));
+    const spacesToHyphen = withSuffixHeuristics.replace(/\s+/g, '-');
+    const collapseHyphens = spacesToHyphen.replace(/-+/g, '-');
+    const trimmed = collapseHyphens.replace(/^-+|-+$/g, '');
+
+    return trimmed;
+}
+
 export class StartSubscriptionCheckoutUseCase {
     constructor(
         @Inject(SubscriptionCheckoutSessionsRepository)
@@ -53,8 +85,15 @@ export class StartSubscriptionCheckoutUseCase {
             throw new InvalidCheckoutDomainError();
         }
 
+        let normalizedSubdomain: string | null = null;
         if (data.domainType === 'SUBDOMAIN' && data.subdomain) {
-            const isAvailable = await this.subdomainAvailabilityChecker.isAvailable(data.subdomain);
+            normalizedSubdomain = normalizeSubdomain(data.subdomain);
+
+            if (normalizedSubdomain.length < 3 || !FINAL_SUBDOMAIN_REGEX.test(normalizedSubdomain)) {
+                throw new InvalidCheckoutDomainError();
+            }
+
+            const isAvailable = await this.subdomainAvailabilityChecker.isAvailable(normalizedSubdomain);
             if (!isAvailable) {
                 throw new SubdomainUnavailableError();
             }
@@ -67,7 +106,7 @@ export class StartSubscriptionCheckoutUseCase {
             ownerName: data.subscriberName,
             ownerEmail: data.subscriberEmail,
             domainType: data.domainType,
-            subdomain: data.subdomain ?? null,
+            subdomain: normalizedSubdomain,
             customDomain: data.customDomain ?? null,
             paymentMethod: data.paymentMethod,
             totalAmount: data.totalAmount,

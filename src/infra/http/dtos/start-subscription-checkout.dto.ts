@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsIn, IsNotEmpty, IsNumber, IsOptional, IsString, Matches, Min } from 'class-validator';
+import { IsIn, IsNotEmpty, IsNumber, IsOptional, IsString, Min } from 'class-validator';
 import { BillingCycle, DomainType, PaymentMethod, PlanTier } from '../../../domain/subscription-checkout/enterprise/entities/subscription-checkout-session';
 
 export class StartSubscriptionCheckoutDto {
@@ -23,7 +23,6 @@ export class StartSubscriptionCheckoutDto {
     @ApiPropertyOptional({ example: 'seuestudio' })
     @IsOptional()
     @IsString()
-    @Matches(/^[a-z0-9-]+$/)
     subdomain?: string;
 
     @ApiPropertyOptional({ example: 'www.seuestudio.com.br' })

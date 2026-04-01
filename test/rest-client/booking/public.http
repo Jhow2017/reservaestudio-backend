@@ -3,8 +3,8 @@
 ### ======================================================
 
 @baseUrl = http://localhost:4000
-@studioSlug = rockvalley
-@roomId = REPLACE_ROOM_ID
+@studioSlug = rock-valley
+@roomId = 2d9d946e-fbee-49b7-ba24-4233589d7a6b
 
 ### ✅ Listar salas públicas por studioSlug
 GET {{baseUrl}}/public/studios/{{studioSlug}}/rooms

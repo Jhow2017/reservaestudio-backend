@@ -8,7 +8,8 @@
 @ownerEmail = jhongama_jesus@hotmail.com
 @ownerPassword = 123456789
 @accessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3OWQ2OTA3Mi04MjMzLTQ2NjUtOWUzMi0wZGJmMTk2NjZmY2EiLCJpYXQiOjE3NzUwMDI2NTcsImV4cCI6MTc3NTYwNzQ1N30.ajQ5_07KrmLbgir6sT6QnDV4yBUnXs6Jwd-J-Y5zym8
-
+@subscriberEmail = contato@rockvalley.com.br
+@subscriberPassword = 123456
 
 ### Pré-requisito
 ### 1) Subir API: yarn start
@@ -42,6 +43,16 @@ Content-Type: application/json
 {
   "email": "{{ownerEmail}}",
   "password": "{{ownerPassword}}"
+}
+
+### @name loginSuccessSubscriber
+### ✅ Login com credenciais válidas (subscriber)
+POST {{baseUrl}}/auth/signin
+Content-Type: application/json
+
+{
+  "email": "{{subscriberEmail}}",
+  "password": "{{subscriberPassword}}"
 }
 
 ### ❌ Sem email (erro de validação)
