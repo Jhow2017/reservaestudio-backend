@@ -78,6 +78,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
             return HttpStatus.NOT_FOUND;
         }
 
+        if (exception.constructor.name === 'SubscriptionCheckoutAccessDeniedError') {
+            return HttpStatus.FORBIDDEN;
+        }
+
         if (exception.constructor.name === 'NotAllowedError') {
             return HttpStatus.FORBIDDEN;
         }

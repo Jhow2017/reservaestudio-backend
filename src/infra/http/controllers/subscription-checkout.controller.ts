@@ -1,11 +1,12 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Request } from 'express';
+import { User } from '../../../domain/auth/enterprise/entities/user';
 import { ApproveSubscriptionCheckoutUseCase } from '../../../domain/subscription-checkout/application/use-cases/approve-subscription-checkout';
 import { GetSubscriptionCheckoutUseCase } from '../../../domain/subscription-checkout/application/use-cases/get-subscription-checkout';
 import { StartSubscriptionCheckoutUseCase } from '../../../domain/subscription-checkout/application/use-cases/start-subscription-checkout';
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 import { OwnerGuard } from '../../auth/owner.guard';
-import { Public } from '../../auth/public';
 import { ApproveSubscriptionCheckoutDto } from '../dtos/approve-subscription-checkout.dto';
 import { StartSubscriptionCheckoutDto } from '../dtos/start-subscription-checkout.dto';
 
@@ -19,27 +20,43 @@ export class SubscriptionCheckoutController {
     ) { }
 
     @Post('/start')
-    @Public()
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
     @HttpCode(HttpStatus.CREATED)
-    @ApiOperation({ summary: 'Iniciar checkout de assinatura do studio' })
+    @ApiOperation({ summary: 'Iniciar checkout de assinatura (usuário autenticado)' })
     @ApiBody({ type: StartSubscriptionCheckoutDto })
     @ApiResponse({ status: 201, description: 'Checkout iniciado com sucesso' })
     @ApiResponse({ status: 400, description: 'Dados inválidos de domínio/plano' })
+    @ApiResponse({ status: 401, description: 'Não autenticado' })
     @ApiResponse({ status: 409, description: 'Subdomínio indisponível' })
-    async start(@Body() body: StartSubscriptionCheckoutDto) {
-        const { checkoutSession } = await this.startSubscriptionCheckoutUseCase.execute(body);
+    async start(@Body() body: StartSubscriptionCheckoutDto, @Req() req: Request) {
+        const user = req.user as User;
+        const { checkoutSession } = await this.startSubscriptionCheckoutUseCase.execute({
+            ...body,
+            subscriberUserId: user.id.toString(),
+            subscriberName: user.name,
+            subscriberEmail: user.email,
+        });
 
         return this.mapSession(checkoutSession);
     }
 
     @Get('/:checkoutId')
-    @Public()
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
     @ApiOperation({ summary: 'Consultar status de checkout de assinatura' })
     @ApiParam({ name: 'checkoutId' })
     @ApiResponse({ status: 200, description: 'Checkout encontrado' })
+    @ApiResponse({ status: 401, description: 'Não autenticado' })
+    @ApiResponse({ status: 403, description: 'Acesso negado para este checkout' })
     @ApiResponse({ status: 404, description: 'Checkout não encontrado' })
-    async getById(@Param('checkoutId') checkoutId: string) {
-        const { checkoutSession } = await this.getSubscriptionCheckoutUseCase.execute({ checkoutId });
+    async getById(@Param('checkoutId') checkoutId: string, @Req() req: Request) {
+        const user = req.user as User;
+        const { checkoutSession } = await this.getSubscriptionCheckoutUseCase.execute({
+            checkoutId,
+            requesterUserId: user.id.toString(),
+            requesterRole: user.role,
+        });
         return this.mapSession(checkoutSession);
     }
 
@@ -73,8 +90,6 @@ export class SubscriptionCheckoutController {
         studioName: string;
         ownerName: string;
         ownerEmail: string;
-        ownerPhone: string;
-        ownerDocument: string;
         domainType: string;
         subdomain: string | null;
         customDomain: string | null;
@@ -95,8 +110,6 @@ export class SubscriptionCheckoutController {
                 studioName: checkoutSession.studioName,
                 ownerName: checkoutSession.ownerName,
                 ownerEmail: checkoutSession.ownerEmail,
-                ownerPhone: checkoutSession.ownerPhone,
-                ownerDocument: checkoutSession.ownerDocument,
                 domainType: checkoutSession.domainType,
                 subdomain: checkoutSession.subdomain,
                 customDomain: checkoutSession.customDomain,

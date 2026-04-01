@@ -13,8 +13,6 @@ export class PrismaSubscriptionCheckoutSessionMapper {
                 studioName: raw.studioName,
                 ownerName: raw.ownerName,
                 ownerEmail: raw.ownerEmail,
-                ownerPhone: raw.ownerPhone,
-                ownerDocument: raw.ownerDocument,
                 domainType: raw.domainType as 'SUBDOMAIN' | 'CUSTOM_DOMAIN',
                 subdomain: raw.subdomain,
                 customDomain: raw.customDomain,

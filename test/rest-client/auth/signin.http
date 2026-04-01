@@ -7,7 +7,7 @@
 @password = senha123
 @ownerEmail = jhongama_jesus@hotmail.com
 @ownerPassword = 123456789
-@accessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyZWFjNzc4My1iMTA1LTQwOGUtOGRmMC0zY2EzMmQ3N2RiNjAiLCJpYXQiOjE3NzQ5ODgwODMsImV4cCI6MTc3NTU5Mjg4M30.JCHxCUH8O80g5MNHmMt-FEsgVMMhPQWxUQqZIJR9xlg
+@accessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3OWQ2OTA3Mi04MjMzLTQ2NjUtOWUzMi0wZGJmMTk2NjZmY2EiLCJpYXQiOjE3NzUwMDI2NTcsImV4cCI6MTc3NTYwNzQ1N30.ajQ5_07KrmLbgir6sT6QnDV4yBUnXs6Jwd-J-Y5zym8
 
 
 ### Pré-requisito

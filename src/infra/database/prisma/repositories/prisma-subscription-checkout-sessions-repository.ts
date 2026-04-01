@@ -17,8 +17,6 @@ export class PrismaSubscriptionCheckoutSessionsRepository implements Subscriptio
                 studioName: session.studioName,
                 ownerName: session.ownerName,
                 ownerEmail: session.ownerEmail,
-                ownerPhone: session.ownerPhone,
-                ownerDocument: session.ownerDocument,
                 domainType: session.domainType,
                 subdomain: session.subdomain,
                 customDomain: session.customDomain,

@@ -11,13 +11,12 @@ import { SubscriptionCheckoutSessionsRepository } from '../repositories/subscrip
 import { SubdomainAvailabilityChecker } from '../services/subdomain-availability-checker';
 
 export interface StartSubscriptionCheckoutRequest {
+    subscriberUserId: string;
+    subscriberName: string;
+    subscriberEmail: string;
     planTier: PlanTier;
     billingCycle: BillingCycle;
     studioName: string;
-    ownerName: string;
-    ownerEmail: string;
-    ownerPhone: string;
-    ownerDocument: string;
     domainType: DomainType;
     subdomain?: string;
     customDomain?: string;
@@ -65,10 +64,8 @@ export class StartSubscriptionCheckoutUseCase {
             planTier: data.planTier,
             billingCycle: data.billingCycle,
             studioName: data.studioName,
-            ownerName: data.ownerName,
-            ownerEmail: data.ownerEmail,
-            ownerPhone: data.ownerPhone,
-            ownerDocument: data.ownerDocument,
+            ownerName: data.subscriberName,
+            ownerEmail: data.subscriberEmail,
             domainType: data.domainType,
             subdomain: data.subdomain ?? null,
             customDomain: data.customDomain ?? null,
@@ -76,7 +73,7 @@ export class StartSubscriptionCheckoutUseCase {
             totalAmount: data.totalAmount,
             status: 'PENDING_PAYMENT',
             studioId: null,
-            subscriberUserId: null,
+            subscriberUserId: data.subscriberUserId,
             paymentReference: null,
         });
 

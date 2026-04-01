@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEmail, IsIn, IsNotEmpty, IsNumber, IsOptional, IsString, Matches, Min } from 'class-validator';
+import { IsIn, IsNotEmpty, IsNumber, IsOptional, IsString, Matches, Min } from 'class-validator';
 import { BillingCycle, DomainType, PaymentMethod, PlanTier } from '../../../domain/subscription-checkout/enterprise/entities/subscription-checkout-session';
 
 export class StartSubscriptionCheckoutDto {
@@ -15,25 +15,6 @@ export class StartSubscriptionCheckoutDto {
     @IsString()
     @IsNotEmpty()
     studioName: string;
-
-    @ApiProperty({ example: 'Carlos Mendes' })
-    @IsString()
-    @IsNotEmpty()
-    ownerName: string;
-
-    @ApiProperty({ example: 'contato@rockvalley.com.br' })
-    @IsEmail()
-    ownerEmail: string;
-
-    @ApiProperty({ example: '(11) 99999-9999' })
-    @IsString()
-    @IsNotEmpty()
-    ownerPhone: string;
-
-    @ApiProperty({ example: '000.000.000-00' })
-    @IsString()
-    @IsNotEmpty()
-    ownerDocument: string;
 
     @ApiProperty({ enum: ['SUBDOMAIN', 'CUSTOM_DOMAIN'] })
     @IsIn(['SUBDOMAIN', 'CUSTOM_DOMAIN'])

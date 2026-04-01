@@ -8,18 +8,15 @@
 @subscriberToken = REPLACE_SUBSCRIBER_TOKEN
 
 ### @name startCheckout
-### ✅ Iniciar checkout (plano + dados + domínio + pagamento)
+### ✅ Iniciar checkout (plano + domínio + pagamento) - requer auth
 POST {{baseUrl}}/subscription-checkout/start
+Authorization: Bearer {{subscriberToken}}
 Content-Type: application/json
 
 {
   "planTier": "PROFESSIONAL",
   "billingCycle": "ANNUAL",
   "studioName": "Rock Valley Studio",
-  "ownerName": "Carlos Mendes",
-  "ownerEmail": "contato@rockvalley.com.br",
-  "ownerPhone": "(11) 99999-9999",
-  "ownerDocument": "000.000.000-00",
   "domainType": "SUBDOMAIN",
   "subdomain": "rockvalley-{{$timestamp}}",
   "paymentMethod": "CARD",
@@ -28,6 +25,7 @@ Content-Type: application/json
 
 ### ✅ Consultar status de checkout
 GET {{baseUrl}}/subscription-checkout/{{checkoutId}}
+Authorization: Bearer {{subscriberToken}}
 
 ### ✅ Aprovar checkout (V1 manual por OWNER)
 ### @name approveCheckout
@@ -63,16 +61,13 @@ Content-Type: application/json
 
 ### ❌ Subdomínio indisponível (deve retornar 409)
 POST {{baseUrl}}/subscription-checkout/start
+Authorization: Bearer {{subscriberToken}}
 Content-Type: application/json
 
 {
   "planTier": "STARTER",
   "billingCycle": "MONTHLY",
   "studioName": "Outro Studio",
-  "ownerName": "Ana",
-  "ownerEmail": "ana@studio.com",
-  "ownerPhone": "(11) 90000-0000",
-  "ownerDocument": "111.111.111-11",
   "domainType": "SUBDOMAIN",
   "subdomain": "rockvalley",
   "paymentMethod": "PIX",

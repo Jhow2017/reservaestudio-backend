@@ -179,8 +179,6 @@ model SubscriptionCheckout {
     studioName  String
     ownerName   String
     ownerEmail  String
-    ownerPhone  String
-    ownerDocument String
     domainType  String
     subdomain   String?
     customDomain String?

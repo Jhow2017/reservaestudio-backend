@@ -13,8 +13,6 @@ export interface SubscriptionCheckoutSessionProps {
     studioName: string;
     ownerName: string;
     ownerEmail: string;
-    ownerPhone: string;
-    ownerDocument: string;
     domainType: DomainType;
     subdomain: string | null;
     customDomain: string | null;
@@ -34,8 +32,6 @@ export class SubscriptionCheckoutSession extends Entity<SubscriptionCheckoutSess
     get studioName(): string { return this.props.studioName; }
     get ownerName(): string { return this.props.ownerName; }
     get ownerEmail(): string { return this.props.ownerEmail; }
-    get ownerPhone(): string { return this.props.ownerPhone; }
-    get ownerDocument(): string { return this.props.ownerDocument; }
     get domainType(): DomainType { return this.props.domainType; }
     get subdomain(): string | null { return this.props.subdomain; }
     get customDomain(): string | null { return this.props.customDomain; }
