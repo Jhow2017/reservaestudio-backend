@@ -12,10 +12,10 @@
   - `GET /admin/studios/:studioId` (visão global, somente OWNER)
   - `GET /admin/studio-ops/:studioSlug/bookings` (operação de estúdio)
   - `GET /admin/studio-ops/:studioSlug/clients` (operação de estúdio)
-- Endpoints de onboarding de assinatura:
-  - `POST /onboarding/start`
-  - `GET /onboarding/:onboardingId`
-  - `POST /onboarding/:onboardingId/confirm`
+- Endpoints de checkout de assinatura:
+  - `POST /subscription-checkout/start`
+  - `GET /subscription-checkout/:checkoutId`
+  - `POST /subscription-checkout/:checkoutId/approve` (V1 manual por OWNER)
 
 ## 2) Regras implementadas
 
@@ -26,10 +26,10 @@
 - Calcula `totalPrice` no backend.
 - `createAccount=true` cria conta de usuário quando ainda não existe.
 
-## 3) Onboarding oficial do studio (assinatura)
+## 3) Checkout oficial do studio (assinatura)
 
 Use a coleção:
-- `test/rest-client/onboarding/contract.http`
+- `test/rest-client/subscription-checkout/contract.http`
 
 Esse fluxo substitui cadastro manual de studio por admin.
 
@@ -39,7 +39,7 @@ Se preferir, ainda é possível usar seed manual por SQL.
 
 ## 5) Arquivos de teste REST
 
-- `test/rest-client/onboarding/contract.http`
+- `test/rest-client/subscription-checkout/contract.http`
 - `test/rest-client/booking/public.http`
 - `test/rest-client/admin/studios.http`
 

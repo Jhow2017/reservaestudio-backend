@@ -6,7 +6,7 @@
 ### 2) Dados do estúdio
 ### 3) Domínio
 ### 4) Forma de pagamento (simulada)
-### 5) Confirmar onboarding (OWNER)
+### 5) Aprovar checkout de assinatura (OWNER)
 ### 6) "Entrar no dashboard" (login do assinante USER do studio)
 ### 7) Cadastrar salas no settings conforme plano
 ### ======================================================
@@ -18,10 +18,10 @@
 @subdomain = rockvalley-{{$timestamp}}
 
 ### ------------------------------------------------------
-### PASSO 1-5: START ONBOARDING
+### PASSO 1-5: START CHECKOUT DE ASSINATURA
 ### ------------------------------------------------------
-### @name startOnboarding
-POST {{baseUrl}}/onboarding/start
+### @name startCheckout
+POST {{baseUrl}}/subscription-checkout/start
 Content-Type: application/json
 
 {
@@ -41,14 +41,14 @@ Content-Type: application/json
 ### ------------------------------------------------------
 ### PASSO 5.1: CONSULTAR STATUS (PENDING_PAYMENT)
 ### ------------------------------------------------------
-GET {{baseUrl}}/onboarding/{{startOnboarding.response.body.onboarding.id}}
+GET {{baseUrl}}/subscription-checkout/{{startCheckout.response.body.checkout.id}}
 
 ### ------------------------------------------------------
 ### PASSO 6: CONFIRMAR PAGAMENTO (SIMULADO, PROTEGIDO)
 ### Requer OWNER token
 ### ------------------------------------------------------
-### @name confirmOnboarding
-POST {{baseUrl}}/onboarding/{{startOnboarding.response.body.onboarding.id}}/confirm
+### @name approveCheckout
+POST {{baseUrl}}/subscription-checkout/{{startCheckout.response.body.checkout.id}}/approve
 Authorization: Bearer {{ownerToken}}
 Content-Type: application/json
 
@@ -74,7 +74,7 @@ Content-Type: application/json
 ### PASSO 8: SETTINGS -> CADASTRAR SALAS
 ### Para PROFESSIONAL: até 3 salas.
 ### ------------------------------------------------------
-POST {{baseUrl}}/settings/studios/{{confirmOnboarding.response.body.onboarding.studioId}}/rooms
+POST {{baseUrl}}/settings/studios/{{approveCheckout.response.body.checkout.studioId}}/rooms
 Authorization: Bearer {{loginStudioSubscriber.response.body.accessToken}}
 Content-Type: application/json
 
@@ -87,7 +87,7 @@ Content-Type: application/json
   "features": ["Bateria acústica", "PA 1000W"]
 }
 
-POST {{baseUrl}}/settings/studios/{{confirmOnboarding.response.body.onboarding.studioId}}/rooms
+POST {{baseUrl}}/settings/studios/{{approveCheckout.response.body.checkout.studioId}}/rooms
 Authorization: Bearer {{loginStudioSubscriber.response.body.accessToken}}
 Content-Type: application/json
 
@@ -100,7 +100,7 @@ Content-Type: application/json
   "features": ["Mesa digital", "Microfones premium"]
 }
 
-POST {{baseUrl}}/settings/studios/{{confirmOnboarding.response.body.onboarding.studioId}}/rooms
+POST {{baseUrl}}/settings/studios/{{approveCheckout.response.body.checkout.studioId}}/rooms
 Authorization: Bearer {{loginStudioSubscriber.response.body.accessToken}}
 Content-Type: application/json
 
@@ -116,7 +116,7 @@ Content-Type: application/json
 ### ------------------------------------------------------
 ### EXTRA: VALIDAR LIMITE DE PLANO (4a sala -> 409 no PROFESSIONAL)
 ### ------------------------------------------------------
-POST {{baseUrl}}/settings/studios/{{confirmOnboarding.response.body.onboarding.studioId}}/rooms
+POST {{baseUrl}}/settings/studios/{{approveCheckout.response.body.checkout.studioId}}/rooms
 Authorization: Bearer {{loginStudioSubscriber.response.body.accessToken}}
 Content-Type: application/json
 

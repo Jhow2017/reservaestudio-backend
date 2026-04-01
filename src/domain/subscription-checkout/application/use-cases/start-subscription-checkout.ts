@@ -1,10 +1,16 @@
 import { Inject } from '@nestjs/common';
 import { UseCaseError } from '../../../../core/errors/use-case-error';
-import { OnboardingSession, BillingCycle, DomainType, PaymentMethod, PlanTier } from '../../enterprise/entities/onboarding-session';
-import { OnboardingSessionsRepository } from '../repositories/onboarding-sessions-repository';
+import {
+    BillingCycle,
+    DomainType,
+    PaymentMethod,
+    PlanTier,
+    SubscriptionCheckoutSession,
+} from '../../enterprise/entities/subscription-checkout-session';
+import { SubscriptionCheckoutSessionsRepository } from '../repositories/subscription-checkout-sessions-repository';
 import { SubdomainAvailabilityChecker } from '../services/subdomain-availability-checker';
 
-export interface StartOnboardingRequest {
+export interface StartSubscriptionCheckoutRequest {
     planTier: PlanTier;
     billingCycle: BillingCycle;
     studioName: string;
@@ -19,11 +25,11 @@ export interface StartOnboardingRequest {
     totalAmount: number;
 }
 
-export interface StartOnboardingResponse {
-    onboardingSession: OnboardingSession;
+export interface StartSubscriptionCheckoutResponse {
+    checkoutSession: SubscriptionCheckoutSession;
 }
 
-export class InvalidOnboardingDomainError extends UseCaseError {
+export class InvalidCheckoutDomainError extends UseCaseError {
     constructor() { super('Invalid domain configuration'); }
 }
 
@@ -31,21 +37,21 @@ export class SubdomainUnavailableError extends UseCaseError {
     constructor() { super('Subdomain is not available'); }
 }
 
-export class StartOnboardingUseCase {
+export class StartSubscriptionCheckoutUseCase {
     constructor(
-        @Inject(OnboardingSessionsRepository)
-        private onboardingSessionsRepository: OnboardingSessionsRepository,
+        @Inject(SubscriptionCheckoutSessionsRepository)
+        private subscriptionCheckoutSessionsRepository: SubscriptionCheckoutSessionsRepository,
         @Inject(SubdomainAvailabilityChecker)
         private subdomainAvailabilityChecker: SubdomainAvailabilityChecker,
     ) { }
 
-    async execute(data: StartOnboardingRequest): Promise<StartOnboardingResponse> {
+    async execute(data: StartSubscriptionCheckoutRequest): Promise<StartSubscriptionCheckoutResponse> {
         if (data.domainType === 'SUBDOMAIN' && !data.subdomain) {
-            throw new InvalidOnboardingDomainError();
+            throw new InvalidCheckoutDomainError();
         }
 
         if (data.domainType === 'CUSTOM_DOMAIN' && !data.customDomain) {
-            throw new InvalidOnboardingDomainError();
+            throw new InvalidCheckoutDomainError();
         }
 
         if (data.domainType === 'SUBDOMAIN' && data.subdomain) {
@@ -55,7 +61,7 @@ export class StartOnboardingUseCase {
             }
         }
 
-        const session = OnboardingSession.create({
+        const session = SubscriptionCheckoutSession.create({
             planTier: data.planTier,
             billingCycle: data.billingCycle,
             studioName: data.studioName,
@@ -70,11 +76,12 @@ export class StartOnboardingUseCase {
             totalAmount: data.totalAmount,
             status: 'PENDING_PAYMENT',
             studioId: null,
-            ownerUserId: null,
+            subscriberUserId: null,
+            paymentReference: null,
         });
 
-        await this.onboardingSessionsRepository.create(session);
+        await this.subscriptionCheckoutSessionsRepository.create(session);
 
-        return { onboardingSession: session };
+        return { checkoutSession: session };
     }
 }

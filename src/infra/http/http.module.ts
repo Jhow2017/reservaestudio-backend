@@ -40,19 +40,19 @@ import { ListStudioBookingsUseCase } from '../../domain/booking/application/use-
 import { ListStudioClientsUseCase } from '../../domain/booking/application/use-cases/list-studio-clients';
 import { ListGlobalStudiosUseCase } from '../../domain/booking/application/use-cases/list-global-studios';
 import { GetGlobalStudioDetailsUseCase } from '../../domain/booking/application/use-cases/get-global-studio-details';
-import { OnboardingController } from './controllers/onboarding.controller';
-import { StartOnboardingUseCase } from '../../domain/onboarding/application/use-cases/start-onboarding';
-import { GetOnboardingSessionUseCase } from '../../domain/onboarding/application/use-cases/get-onboarding-session';
-import { ConfirmOnboardingUseCase } from '../../domain/onboarding/application/use-cases/confirm-onboarding';
-import { OnboardingSessionsRepository } from '../../domain/onboarding/application/repositories/onboarding-sessions-repository';
-import { InMemoryOnboardingSessionsRepository } from '../onboarding/in-memory-onboarding-sessions-repository';
-import { SubdomainAvailabilityChecker } from '../../domain/onboarding/application/services/subdomain-availability-checker';
-import { StudioSubdomainAvailabilityChecker } from '../onboarding/studio-subdomain-availability-checker';
-import { StudioProvisioningService } from '../../domain/onboarding/application/services/studio-provisioning-service';
-import { StudioOnboardingProvisioningService } from '../onboarding/studio-onboarding-provisioning.service';
 import { SettingsRoomsController } from './controllers/settings-rooms.controller';
 import { CreateStudioRoomFromSettingsUseCase } from '../../domain/booking/application/use-cases/create-studio-room-from-settings';
 import { OwnerGuard } from '../auth/owner.guard';
+import { SubscriptionCheckoutController } from './controllers/subscription-checkout.controller';
+import { StartSubscriptionCheckoutUseCase } from '../../domain/subscription-checkout/application/use-cases/start-subscription-checkout';
+import { GetSubscriptionCheckoutUseCase } from '../../domain/subscription-checkout/application/use-cases/get-subscription-checkout';
+import { ApproveSubscriptionCheckoutUseCase } from '../../domain/subscription-checkout/application/use-cases/approve-subscription-checkout';
+import { SubscriptionCheckoutSessionsRepository } from '../../domain/subscription-checkout/application/repositories/subscription-checkout-sessions-repository';
+import { PrismaSubscriptionCheckoutSessionsRepository } from '../database/prisma/repositories/prisma-subscription-checkout-sessions-repository';
+import { SubdomainAvailabilityChecker } from '../../domain/subscription-checkout/application/services/subdomain-availability-checker';
+import { StudioSubdomainAvailabilityChecker } from '../subscription-checkout/studio-subdomain-availability-checker';
+import { SubscriptionProvisioningService } from '../../domain/subscription-checkout/application/services/subscription-provisioning-service';
+import { StudioSubscriptionProvisioningService } from '../subscription-checkout/studio-subscription-provisioning.service';
 
 @Module({
     imports: [DatabaseModule, CryptographyModule, AuthModule, MessagingModule],
@@ -74,7 +74,7 @@ import { OwnerGuard } from '../auth/owner.guard';
         ListStudioBookingsController,
         ListStudioClientsController,
         ListGlobalStudiosController,
-        OnboardingController,
+        SubscriptionCheckoutController,
         SettingsRoomsController,
     ],
     providers: [
@@ -95,20 +95,20 @@ import { OwnerGuard } from '../auth/owner.guard';
         ListStudioClientsUseCase,
         ListGlobalStudiosUseCase,
         GetGlobalStudioDetailsUseCase,
-        StartOnboardingUseCase,
-        GetOnboardingSessionUseCase,
-        ConfirmOnboardingUseCase,
+        StartSubscriptionCheckoutUseCase,
+        GetSubscriptionCheckoutUseCase,
+        ApproveSubscriptionCheckoutUseCase,
         {
-            provide: OnboardingSessionsRepository,
-            useClass: InMemoryOnboardingSessionsRepository,
+            provide: SubscriptionCheckoutSessionsRepository,
+            useClass: PrismaSubscriptionCheckoutSessionsRepository,
         },
         {
             provide: SubdomainAvailabilityChecker,
             useClass: StudioSubdomainAvailabilityChecker,
         },
         {
-            provide: StudioProvisioningService,
-            useClass: StudioOnboardingProvisioningService,
+            provide: SubscriptionProvisioningService,
+            useClass: StudioSubscriptionProvisioningService,
         },
         {
             provide: AuditLogger,

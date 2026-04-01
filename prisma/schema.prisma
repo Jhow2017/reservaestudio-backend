@@ -164,3 +164,36 @@ model AuditLog {
 
     @@map("audit_logs")
 }
+
+enum SubscriptionCheckoutStatus {
+    PENDING_PAYMENT
+    APPROVED
+    REJECTED
+    EXPIRED
+}
+
+model SubscriptionCheckout {
+    id          String                     @id @default(uuid())
+    planTier    PlanTier
+    billingCycle String
+    studioName  String
+    ownerName   String
+    ownerEmail  String
+    ownerPhone  String
+    ownerDocument String
+    domainType  String
+    subdomain   String?
+    customDomain String?
+    paymentMethod String
+    totalAmount Decimal                    @db.Decimal(10, 2)
+    status      SubscriptionCheckoutStatus @default(PENDING_PAYMENT)
+    studioId    String?
+    subscriberUserId String?
+    paymentReference String?
+    createdAt   DateTime                   @default(now())
+    updatedAt   DateTime                   @updatedAt
+
+    @@index([status])
+    @@index([ownerEmail])
+    @@map("subscription_checkouts")
+}

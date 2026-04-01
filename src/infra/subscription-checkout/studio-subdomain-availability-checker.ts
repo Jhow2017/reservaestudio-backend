@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { StudiosRepository } from '../../domain/booking/application/repositories/studios-repository';
-import { SubdomainAvailabilityChecker } from '../../domain/onboarding/application/services/subdomain-availability-checker';
+import { SubdomainAvailabilityChecker } from '../../domain/subscription-checkout/application/services/subdomain-availability-checker';
 
 @Injectable()
 export class StudioSubdomainAvailabilityChecker implements SubdomainAvailabilityChecker {

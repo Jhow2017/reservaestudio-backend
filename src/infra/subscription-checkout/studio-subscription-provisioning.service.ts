@@ -6,13 +6,13 @@ import { User } from '../../domain/auth/enterprise/entities/user';
 import { Role } from '../../domain/auth/enterprise/value-objects/role';
 import { StudiosRepository } from '../../domain/booking/application/repositories/studios-repository';
 import {
-    StudioProvisioningResult,
-    StudioProvisioningService,
-} from '../../domain/onboarding/application/services/studio-provisioning-service';
-import { OnboardingSession } from '../../domain/onboarding/enterprise/entities/onboarding-session';
+    SubscriptionProvisioningResult,
+    SubscriptionProvisioningService,
+} from '../../domain/subscription-checkout/application/services/subscription-provisioning-service';
+import { SubscriptionCheckoutSession } from '../../domain/subscription-checkout/enterprise/entities/subscription-checkout-session';
 
 @Injectable()
-export class StudioOnboardingProvisioningService implements StudioProvisioningService {
+export class StudioSubscriptionProvisioningService implements SubscriptionProvisioningService {
     constructor(
         @Inject(StudiosRepository)
         private studiosRepository: StudiosRepository,
@@ -22,17 +22,17 @@ export class StudioOnboardingProvisioningService implements StudioProvisioningSe
         private hashGenerator: HashGenerator,
     ) { }
 
-    async provisionFromOnboarding(session: OnboardingSession): Promise<StudioProvisioningResult> {
+    async provisionFromCheckout(session: SubscriptionCheckoutSession): Promise<SubscriptionProvisioningResult> {
         const existingUser = await this.usersRepository.findByEmail(session.ownerEmail);
 
-        let ownerUserId: string;
+        let subscriberUserId: string;
         if (existingUser) {
-            ownerUserId = existingUser.id.toString();
+            subscriberUserId = existingUser.id.toString();
         } else {
             const temporaryPassword = randomBytes(16).toString('hex');
             const hashedPassword = await this.hashGenerator.hash(temporaryPassword);
 
-            const owner = User.create({
+            const subscriber = User.create({
                 name: session.ownerName,
                 email: session.ownerEmail,
                 password: hashedPassword,
@@ -42,12 +42,12 @@ export class StudioOnboardingProvisioningService implements StudioProvisioningSe
                 resetPasswordExpires: null,
             });
 
-            await this.usersRepository.create(owner);
-            ownerUserId = owner.id.toString();
+            await this.usersRepository.create(subscriber);
+            subscriberUserId = subscriber.id.toString();
         }
 
         const studio = await this.studiosRepository.create({
-            ownerUserId,
+            ownerUserId: subscriberUserId,
             name: session.studioName,
             slug: session.subdomain ?? `studio-${session.id.toString().slice(0, 8)}`,
             planTier: session.planTier,
@@ -58,7 +58,7 @@ export class StudioOnboardingProvisioningService implements StudioProvisioningSe
 
         return {
             studioId: studio.id.toString(),
-            ownerUserId,
+            subscriberUserId,
         };
     }
 }

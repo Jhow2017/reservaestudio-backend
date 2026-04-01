@@ -74,6 +74,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
             return HttpStatus.NOT_FOUND;
         }
 
+        if (exception.constructor.name === 'SubscriptionCheckoutSessionNotFoundError') {
+            return HttpStatus.NOT_FOUND;
+        }
+
         if (exception.constructor.name === 'NotAllowedError') {
             return HttpStatus.FORBIDDEN;
         }
@@ -108,6 +112,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
         if (exception.constructor.name === 'SubdomainUnavailableError') {
             return HttpStatus.CONFLICT;
+        }
+
+        if (exception.constructor.name === 'InvalidSubscriptionCheckoutStatusError') {
+            return HttpStatus.BAD_REQUEST;
         }
 
         if (exception.constructor.name === 'RoomLimitReachedError') {

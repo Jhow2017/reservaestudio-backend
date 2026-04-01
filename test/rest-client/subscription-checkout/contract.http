@@ -1,15 +1,15 @@
 ### ======================================================
-### STAGEFLOW - ONBOARDING DE ASSINATURA (CONTRATO)
+### STAGEFLOW - SUBSCRIPTION CHECKOUT (CONTRATO)
 ### ======================================================
 
 @baseUrl = http://localhost:4000
-@onboardingId = 33dada2f-ac85-44e1-b8d0-2d792b53d0ea
+@checkoutId = REPLACE_CHECKOUT_ID
 @ownerToken = REPLACE_OWNER_TOKEN
-@studioAdminToken = REPLACE_STUDIO_ADMIN_TOKEN
+@subscriberToken = REPLACE_SUBSCRIBER_TOKEN
 
-### @name startOnboarding
-### ✅ Iniciar onboarding (plano + dados + domínio + pagamento)
-POST {{baseUrl}}/onboarding/start
+### @name startCheckout
+### ✅ Iniciar checkout (plano + dados + domínio + pagamento)
+POST {{baseUrl}}/subscription-checkout/start
 Content-Type: application/json
 
 {
@@ -21,17 +21,17 @@ Content-Type: application/json
   "ownerPhone": "(11) 99999-9999",
   "ownerDocument": "000.000.000-00",
   "domainType": "SUBDOMAIN",
-  "subdomain": "rockvalley",
+  "subdomain": "rockvalley-{{$timestamp}}",
   "paymentMethod": "CARD",
   "totalAmount": 1970
 }
 
-### ✅ Consultar status de onboarding
-GET {{baseUrl}}/onboarding/{{onboardingId}}
+### ✅ Consultar status de checkout
+GET {{baseUrl}}/subscription-checkout/{{checkoutId}}
 
-### ✅ Confirmar onboarding (simula confirmação da etapa financeira)
-### @name confirmOnboarding
-POST {{baseUrl}}/onboarding/{{onboardingId}}/confirm
+### ✅ Aprovar checkout (V1 manual por OWNER)
+### @name approveCheckout
+POST {{baseUrl}}/subscription-checkout/{{checkoutId}}/approve
 Authorization: Bearer {{ownerToken}}
 Content-Type: application/json
 
@@ -39,9 +39,9 @@ Content-Type: application/json
   "paymentReference": "evt_payment_ok_123"
 }
 
-### ✅ Adicionar sala via Settings (respeita limite do plano)
-POST {{baseUrl}}/settings/studios/{{confirmOnboarding.response.body.onboarding.studioId}}/rooms
-Authorization: Bearer {{studioAdminToken}}
+### ✅ Adicionar sala via Settings (assinante USER vinculado)
+POST {{baseUrl}}/settings/studios/{{approveCheckout.response.body.checkout.studioId}}/rooms
+Authorization: Bearer {{subscriberToken}}
 Content-Type: application/json
 
 {
@@ -53,8 +53,8 @@ Content-Type: application/json
   "features": ["Bateria acústica", "PA 1000W"]
 }
 
-### ❌ Confirm sem token OWNER (deve retornar 401/403)
-POST {{baseUrl}}/onboarding/{{onboardingId}}/confirm
+### ❌ Approve sem token OWNER (deve retornar 401/403)
+POST {{baseUrl}}/subscription-checkout/{{checkoutId}}/approve
 Content-Type: application/json
 
 {
@@ -62,7 +62,7 @@ Content-Type: application/json
 }
 
 ### ❌ Subdomínio indisponível (deve retornar 409)
-POST {{baseUrl}}/onboarding/start
+POST {{baseUrl}}/subscription-checkout/start
 Content-Type: application/json
 
 {

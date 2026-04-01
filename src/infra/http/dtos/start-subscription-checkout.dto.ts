@@ -1,8 +1,8 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEmail, IsIn, IsNotEmpty, IsNumber, IsOptional, IsString, Matches, Min } from 'class-validator';
-import { BillingCycle, DomainType, PaymentMethod, PlanTier } from '../../../domain/onboarding/enterprise/entities/onboarding-session';
+import { BillingCycle, DomainType, PaymentMethod, PlanTier } from '../../../domain/subscription-checkout/enterprise/entities/subscription-checkout-session';
 
-export class StartOnboardingDto {
+export class StartSubscriptionCheckoutDto {
     @ApiProperty({ enum: ['STARTER', 'PROFESSIONAL', 'ENTERPRISE'] })
     @IsIn(['STARTER', 'PROFESSIONAL', 'ENTERPRISE'])
     planTier: PlanTier;

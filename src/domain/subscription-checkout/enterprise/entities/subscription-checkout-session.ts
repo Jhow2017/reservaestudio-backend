@@ -5,9 +5,9 @@ export type PlanTier = 'STARTER' | 'PROFESSIONAL' | 'ENTERPRISE';
 export type BillingCycle = 'MONTHLY' | 'ANNUAL';
 export type DomainType = 'SUBDOMAIN' | 'CUSTOM_DOMAIN';
 export type PaymentMethod = 'CARD' | 'PIX' | 'BOLETO';
-export type OnboardingStatus = 'DRAFT' | 'PENDING_PAYMENT' | 'ACTIVE' | 'FAILED';
+export type SubscriptionCheckoutStatus = 'PENDING_PAYMENT' | 'APPROVED' | 'REJECTED' | 'EXPIRED';
 
-export interface OnboardingSessionProps {
+export interface SubscriptionCheckoutSessionProps {
     planTier: PlanTier;
     billingCycle: BillingCycle;
     studioName: string;
@@ -20,14 +20,15 @@ export interface OnboardingSessionProps {
     customDomain: string | null;
     paymentMethod: PaymentMethod;
     totalAmount: number;
-    status: OnboardingStatus;
+    status: SubscriptionCheckoutStatus;
     studioId: string | null;
-    ownerUserId: string | null;
+    subscriberUserId: string | null;
+    paymentReference: string | null;
     createdAt: Date;
     updatedAt: Date;
 }
 
-export class OnboardingSession extends Entity<OnboardingSessionProps> {
+export class SubscriptionCheckoutSession extends Entity<SubscriptionCheckoutSessionProps> {
     get planTier(): PlanTier { return this.props.planTier; }
     get billingCycle(): BillingCycle { return this.props.billingCycle; }
     get studioName(): string { return this.props.studioName; }
@@ -40,34 +41,32 @@ export class OnboardingSession extends Entity<OnboardingSessionProps> {
     get customDomain(): string | null { return this.props.customDomain; }
     get paymentMethod(): PaymentMethod { return this.props.paymentMethod; }
     get totalAmount(): number { return this.props.totalAmount; }
-    get status(): OnboardingStatus { return this.props.status; }
+    get status(): SubscriptionCheckoutStatus { return this.props.status; }
     get studioId(): string | null { return this.props.studioId; }
-    get ownerUserId(): string | null { return this.props.ownerUserId; }
+    get subscriberUserId(): string | null { return this.props.subscriberUserId; }
+    get paymentReference(): string | null { return this.props.paymentReference; }
     get createdAt(): Date { return this.props.createdAt; }
     get updatedAt(): Date { return this.props.updatedAt; }
 
-    setStatus(status: OnboardingStatus): void {
-        this.props.status = status;
-        this.props.updatedAt = new Date();
-    }
-
-    setProvisioningResult(studioId: string, ownerUserId: string): void {
+    approve(studioId: string, subscriberUserId: string, paymentReference?: string): void {
         this.props.studioId = studioId;
-        this.props.ownerUserId = ownerUserId;
-        this.props.status = 'ACTIVE';
+        this.props.subscriberUserId = subscriberUserId;
+        this.props.paymentReference = paymentReference ?? null;
+        this.props.status = 'APPROVED';
         this.props.updatedAt = new Date();
     }
 
     static create(
-        props: Omit<OnboardingSessionProps, 'createdAt' | 'updatedAt'> & {
+        props: Omit<SubscriptionCheckoutSessionProps, 'createdAt' | 'updatedAt'> & {
             createdAt?: Date;
             updatedAt?: Date;
         },
         id?: UniqueEntityID,
-    ): OnboardingSession {
-        return new OnboardingSession(
+    ): SubscriptionCheckoutSession {
+        return new SubscriptionCheckoutSession(
             {
                 ...props,
+                paymentReference: props.paymentReference ?? null,
                 createdAt: props.createdAt ?? new Date(),
                 updatedAt: props.updatedAt ?? new Date(),
             },
