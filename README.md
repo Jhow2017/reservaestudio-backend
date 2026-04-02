@@ -32,6 +32,39 @@ API backend da plataforma **ReservaEstudio** (SaaS multi-tenant para estúdios),
 $ yarn install
 ```
 
+## Banco de dados (Docker) e variáveis de ambiente
+
+1. Subir o Postgres local:
+
+```bash
+$ docker compose up -d
+```
+
+- Container: `reservaestudio-postgres`
+- Porta host: **5433** → `5432` no container
+- Banco criado pelo Compose: **`reservaestudio`**
+
+2. Copiar variáveis de ambiente:
+
+```bash
+$ cp .env.example .env
+```
+
+Preencha segredos reais (`JWT_SECRET`, SMTP, Stripe, etc.). O arquivo `.env.example` usa como convenção de produção:
+
+- Site: `https://www.reservaestudio.com.br`
+- API: `https://api.reservaestudio.com.br`
+
+Em desenvolvimento local, ajuste `FRONTEND_URL` e `BACKEND_URL` (por exemplo `http://localhost:3000` e `http://localhost:4000`).
+
+3. Aplicar o schema no banco:
+
+```bash
+$ npx prisma migrate dev
+```
+
+`DATABASE_URL` deve apontar para `...localhost:5433/reservaestudio?schema=public` (veja `.env.example`).
+
 ## Compile and run the project
 
 ```bash

@@ -1,3 +1,5 @@
+# Postgres local ReservaEstudio — porta 5433 no host, DB `reservaestudio`.
+# DATABASE_URL: postgresql://postgres:postgres@localhost:5433/reservaestudio?schema=public
 services:
   postgres:
     image: postgres:16-alpine
