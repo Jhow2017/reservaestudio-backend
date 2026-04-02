@@ -9,7 +9,7 @@ import {
     UnauthorizedException,
     UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
 import { User } from '../../../domain/auth/enterprise/entities/user';
 import { LogoutClientAreaUseCase } from '../../../domain/auth/application/use-cases/logout-client-area';
@@ -42,7 +42,26 @@ export class ClientAreaController {
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Obter perfil do cliente autenticado no studio' })
     @ApiParam({ name: 'studioSlug', example: 'super-sonic' })
-    @ApiResponse({ status: 200, description: 'Perfil retornado com sucesso' })
+    @ApiResponse({
+        status: 200,
+        description: 'Perfil retornado com sucesso',
+        schema: {
+            example: {
+                profile: {
+                    id: 'uuid-client',
+                    studioId: 'uuid-studio',
+                    userId: 'uuid-user',
+                    name: 'Banda Super Sonic',
+                    email: 'integrantes@supersonic.com',
+                    phone: '11999998888',
+                    bannerUrl: 'https://cdn.stageflow.app/banners/super-sonic.jpg',
+                    notes: 'Prefere ensaio noturno',
+                },
+            },
+        },
+    })
+    @ApiResponse({ status: 401, description: 'Não autenticado' })
+    @ApiResponse({ status: 403, description: 'Usuário sem vínculo com o studio' })
     async getProfile(@Req() req: Request) {
         const user = req.user as User;
         const studioSlug = String(req.params.studioSlug);
@@ -69,7 +88,28 @@ export class ClientAreaController {
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Atualizar perfil do cliente autenticado no studio' })
     @ApiParam({ name: 'studioSlug', example: 'super-sonic' })
-    @ApiResponse({ status: 200, description: 'Perfil atualizado com sucesso' })
+    @ApiBody({ type: UpdateClientAreaProfileDto })
+    @ApiResponse({
+        status: 200,
+        description: 'Perfil atualizado com sucesso',
+        schema: {
+            example: {
+                profile: {
+                    id: 'uuid-client',
+                    studioId: 'uuid-studio',
+                    userId: 'uuid-user',
+                    name: 'Banda Super Sonic',
+                    email: 'integrantes@supersonic.com',
+                    phone: '11999998888',
+                    bannerUrl: 'https://cdn.stageflow.app/banners/super-sonic.jpg',
+                    notes: 'Prefere ensaio noturno',
+                },
+            },
+        },
+    })
+    @ApiResponse({ status: 400, description: 'Payload inválido' })
+    @ApiResponse({ status: 401, description: 'Não autenticado' })
+    @ApiResponse({ status: 403, description: 'Usuário sem vínculo com o studio' })
     async updateProfile(@Req() req: Request, @Body() body: UpdateClientAreaProfileDto) {
         const user = req.user as User;
         const studioSlug = String(req.params.studioSlug);
@@ -100,7 +140,32 @@ export class ClientAreaController {
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Listar historico de agendamentos do cliente autenticado' })
     @ApiParam({ name: 'studioSlug', example: 'super-sonic' })
-    @ApiResponse({ status: 200, description: 'Historico retornado com sucesso' })
+    @ApiResponse({
+        status: 200,
+        description: 'Historico retornado com sucesso',
+        schema: {
+            example: {
+                bookings: [
+                    {
+                        id: 'uuid-booking',
+                        studioId: 'uuid-studio',
+                        roomId: 'uuid-room',
+                        clientId: 'uuid-client',
+                        bookingDate: '2026-04-01T00:00:00.000Z',
+                        startHour: 19,
+                        endHour: 21,
+                        totalPrice: 160,
+                        status: 'CONFIRMED',
+                        paymentMethod: 'PIX',
+                        paymentStatus: 'PAID',
+                        createdAt: '2026-04-01T10:00:00.000Z',
+                    },
+                ],
+            },
+        },
+    })
+    @ApiResponse({ status: 401, description: 'Não autenticado' })
+    @ApiResponse({ status: 403, description: 'Usuário sem vínculo com o studio' })
     async listBookings(@Req() req: Request) {
         const user = req.user as User;
         const studioSlug = String(req.params.studioSlug);
@@ -131,7 +196,17 @@ export class ClientAreaController {
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Listar comprovantes do cliente (placeholder V1)' })
     @ApiParam({ name: 'studioSlug', example: 'super-sonic' })
-    @ApiResponse({ status: 200, description: 'Comprovantes placeholder retornados com sucesso' })
+    @ApiResponse({
+        status: 200,
+        description: 'Comprovantes placeholder retornados com sucesso',
+        schema: {
+            example: {
+                receipts: [],
+            },
+        },
+    })
+    @ApiResponse({ status: 401, description: 'Não autenticado' })
+    @ApiResponse({ status: 403, description: 'Usuário sem vínculo com o studio' })
     async listReceipts(@Req() req: Request) {
         const user = req.user as User;
         const studioSlug = String(req.params.studioSlug);
@@ -147,7 +222,21 @@ export class ClientAreaController {
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Atualizar URL do banner do cliente' })
     @ApiParam({ name: 'studioSlug', example: 'super-sonic' })
-    @ApiResponse({ status: 200, description: 'Banner atualizado com sucesso' })
+    @ApiBody({ type: UpdateClientAreaBannerDto })
+    @ApiResponse({
+        status: 200,
+        description: 'Banner atualizado com sucesso',
+        schema: {
+            example: {
+                banner: {
+                    bannerUrl: 'https://cdn.stageflow.app/banners/super-sonic.jpg',
+                },
+            },
+        },
+    })
+    @ApiResponse({ status: 400, description: 'Payload inválido' })
+    @ApiResponse({ status: 401, description: 'Não autenticado' })
+    @ApiResponse({ status: 403, description: 'Usuário sem vínculo com o studio' })
     async updateBanner(@Req() req: Request, @Body() body: UpdateClientAreaBannerDto) {
         const user = req.user as User;
         const studioSlug = String(req.params.studioSlug);
@@ -168,7 +257,17 @@ export class ClientAreaController {
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Excluir conta do cliente no escopo deste studio' })
     @ApiParam({ name: 'studioSlug', example: 'super-sonic' })
-    @ApiResponse({ status: 200, description: 'Conta excluida com sucesso' })
+    @ApiResponse({
+        status: 200,
+        description: 'Conta excluida com sucesso',
+        schema: {
+            example: {
+                message: 'Conta do cliente removida com sucesso',
+            },
+        },
+    })
+    @ApiResponse({ status: 401, description: 'Não autenticado' })
+    @ApiResponse({ status: 403, description: 'Usuário sem vínculo com o studio' })
     async deleteAccount(@Req() req: Request) {
         const user = req.user as User;
         const studioSlug = String(req.params.studioSlug);
@@ -183,7 +282,17 @@ export class ClientAreaController {
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Logout da area do cliente' })
     @ApiParam({ name: 'studioSlug', example: 'super-sonic' })
-    @ApiResponse({ status: 200, description: 'Logout realizado com sucesso' })
+    @ApiResponse({
+        status: 200,
+        description: 'Logout realizado com sucesso',
+        schema: {
+            example: {
+                message: 'Logout da area do cliente realizado com sucesso',
+            },
+        },
+    })
+    @ApiResponse({ status: 401, description: 'Não autenticado' })
+    @ApiResponse({ status: 403, description: 'Usuário sem vínculo com o studio' })
     async logout(@Req() req: Request) {
         const authHeader = req.headers.authorization;
         const token = authHeader?.replace('Bearer ', '');

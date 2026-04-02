@@ -28,6 +28,9 @@ Sempre seguir o padrão arquitetural já usado em `auth`.
 - Nunca aceitar campos extras no payload quando houver DTO (seguir `whitelist` + `forbidNonWhitelisted` globais).
 - Regras de negócio (ex.: conflito, data passada, janela de horário) ficam no use case, não no controller.
 - Toda rota nova deve ser documentada com Swagger (`@ApiTags`, `@ApiOperation`, `@ApiResponse`).
+- Em endpoints com payload, usar `@ApiBody({ type: Dto })`.
+- Em `@ApiResponse`, preferir `schema.example` (ou DTO de response quando existir) com contrato real de sucesso.
+- Documentar também respostas de erro esperadas por rota (`400`, `401`, `403`, `404`, `409`) quando aplicável.
 - Rotas com path/query params devem usar `@ApiParam` e `@ApiQuery` quando aplicável.
 - DTOs de request/response devem usar `@ApiProperty`/`@ApiPropertyOptional` com exemplos.
 - Rotas protegidas devem usar `@ApiBearerAuth`.
