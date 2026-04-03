@@ -1,5 +1,6 @@
 import { BadRequestException, Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { SkipThrottle } from '@nestjs/throttler';
 import { Request } from 'express';
 import { User } from '../../../domain/auth/enterprise/entities/user';
 import { ApproveSubscriptionCheckoutUseCase } from '../../../domain/subscription-checkout/application/use-cases/approve-subscription-checkout';
@@ -12,6 +13,8 @@ import { ApproveSubscriptionCheckoutDto } from '../dtos/approve-subscription-che
 import { StartSubscriptionCheckoutDto } from '../dtos/start-subscription-checkout.dto';
 
 @ApiTags('Subscription Checkout')
+/** Rotas com JWT; polling do GET após checkout esgotava o limite global (10/min por IP). */
+@SkipThrottle()
 @Controller('/subscription-checkout')
 export class SubscriptionCheckoutController {
     constructor(

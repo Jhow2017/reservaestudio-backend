@@ -1,10 +1,13 @@
 import { BadRequestException, Controller, Headers, HttpCode, HttpStatus, Post, Req } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { SkipThrottle } from '@nestjs/throttler';
 import { Request } from 'express';
 import { HandleStripeSubscriptionWebhookUseCase } from '../../../domain/subscription-checkout/application/use-cases/handle-stripe-subscription-webhook';
 import { Public } from '../../auth/public';
 
 @ApiTags('Stripe Webhooks')
+/** Stripe envia rajadas de eventos; o throttler global (10/min por IP) gerava 429 no último evento. */
+@SkipThrottle()
 @Controller('/payments/stripe')
 export class StripeWebhookController {
     constructor(
