@@ -2,7 +2,7 @@ import { Inject } from '@nestjs/common';
 import { UseCaseError } from '../../../../core/errors/use-case-error';
 import { Role } from '../../../auth/enterprise/value-objects/role';
 import { SubscriptionCheckoutSessionsRepository } from '../repositories/subscription-checkout-sessions-repository';
-import { CreateEmbeddedSubscriptionSessionResponse, StripeSubscriptionGateway } from '../services/stripe-subscription-gateway';
+import { CreateSubscriptionCheckoutSessionResponse, StripeSubscriptionGateway } from '../services/stripe-subscription-gateway';
 import { SubscriptionCheckoutAccessDeniedError, SubscriptionCheckoutSessionNotFoundError } from './get-subscription-checkout';
 
 export interface CreateSubscriptionCheckoutStripeSessionRequest {
@@ -13,7 +13,8 @@ export interface CreateSubscriptionCheckoutStripeSessionRequest {
 
 export interface CreateSubscriptionCheckoutStripeSessionResponse {
     sessionId: string;
-    clientSecret: string;
+    /** URL do Checkout hospedado Stripe (redirect no navegador). */
+    url: string;
 }
 
 export class SubscriptionCheckoutAlreadyApprovedError extends UseCaseError {
@@ -46,8 +47,8 @@ export class CreateSubscriptionCheckoutStripeSessionUseCase {
             throw new SubscriptionCheckoutAlreadyApprovedError();
         }
 
-        const stripeSession: CreateEmbeddedSubscriptionSessionResponse =
-            await this.stripeSubscriptionGateway.createEmbeddedSubscriptionSession({
+        const stripeSession: CreateSubscriptionCheckoutSessionResponse =
+            await this.stripeSubscriptionGateway.createSubscriptionCheckoutSession({
                 checkoutId: checkout.id.toString(),
                 customerEmail: checkout.ownerEmail,
                 customerName: checkout.ownerName,
@@ -65,7 +66,7 @@ export class CreateSubscriptionCheckoutStripeSessionUseCase {
 
         return {
             sessionId: stripeSession.sessionId,
-            clientSecret: stripeSession.clientSecret,
+            url: stripeSession.url,
         };
     }
 }

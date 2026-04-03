@@ -11,14 +11,17 @@ Swagger do backend: `{BACKEND_URL}/api` (ex.: `http://localhost:4000/api`).
 | Camada | Responsabilidade |
 |--------|------------------|
 | **Server Actions** | Chamar a API com `Authorization: Bearer <accessToken>` (token em cookie/httpOnly conforme seu auth). |
-| **Client Component (pequeno)** | Stripe.js + Embedded Checkout usando o `clientSecret` retornado pela action de sessão. |
+| **Cliente (browser)** | Após `POST .../stripe/session`, **redirecionar** o usuário para `stripe.url` (Checkout **hospedado** na Stripe — mesma experiência visual de páginas como Cursor). **Não** é mais necessário `@stripe/stripe-js` / Embedded Checkout para assinatura. |
 
 Variáveis de ambiente no **Next** (exemplo):
 
 - `NEXT_PUBLIC_API_URL` — URL base da API (ex.: `http://localhost:4000`)
-- `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` — `pk_test_...` (somente publishable no cliente)
 
-O **secret** do Stripe (`sk_test_...`) fica só no backend Nest, nunca no Next.
+O **secret** do Stripe (`sk_test_...`) fica só no backend Nest, nunca no Next. O fluxo de pagamento abre em **checkout.stripe.com**; não use `pk_` no cliente para esse fluxo (opcional só se tiver outra integração).
+
+**Backend (Nest)** — além de `FRONTEND_URL`, opcional:
+
+- `FRONTEND_CHECKOUT_CANCEL_PATH` — caminho ou URL completa para `cancel_url` quando o usuário cancela no Checkout (padrão: `/signup`).
 
 ---
 
@@ -114,7 +117,8 @@ export interface GetSubscriptionCheckoutResponse {
 export interface CreateSubscriptionStripeSessionResponse {
   stripe: {
     sessionId: string;
-    clientSecret: string;
+    /** Abrir no navegador: `window.location.href = url` (Checkout hospedado). */
+    url: string;
   };
 }
 
@@ -235,7 +239,7 @@ export async function getSubscriptionCheckoutById(
 
 ---
 
-## Server Action — criar sessão Stripe (Embedded)
+## Server Action — criar sessão Stripe (hospedado → `url`)
 
 **Arquivo:** `createSubscriptionStripeSession.ts`
 
@@ -279,8 +283,8 @@ export async function createSubscriptionStripeSession(
 
 - **Endpoint:** `POST /subscription-checkout/:checkoutId/stripe/session`
 - **Body:** vazio
-- **Resposta:** `{ stripe: { sessionId, clientSecret } }`
-- O **`clientSecret`** alimenta o componente cliente do Stripe (Embedded / `embedded_page`).
+- **Resposta:** `{ stripe: { sessionId, url } }`
+- O front deve **redirecionar** para **`stripe.url`** (aba atual ou `window.location.assign(url)`).
 
 ---
 
@@ -342,20 +346,18 @@ export async function approveSubscriptionCheckout(
 
 1. Usuário autenticado (token disponível para as actions).
 2. `startSubscriptionCheckout(payload)` → guardar `checkout.id`.
-3. `createSubscriptionStripeSession(checkout.id)` → obter `stripe.clientSecret`.
-4. Renderizar um **Client Component** que chama Stripe.js e monta o Checkout embutido com esse `clientSecret` (e `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`).
-5. Após pagamento, o Stripe redireciona para a **`return_url`** definida no backend:  
-   `{FRONTEND_URL}/signup/sucesso?session_id={CHECKOUT_SESSION_ID}`  
-   Garanta que essa rota exista no Next e que `FRONTEND_URL` no **Nest** seja a mesma base do front.
-6. (Opcional) `getSubscriptionCheckoutById` em loop leve ou após redirect até `status === 'APPROVED'` e `studioId` preenchido.
+3. `createSubscriptionStripeSession(checkout.id)` → obter `stripe.url`.
+4. **`window.location.href = stripe.url`** (ou `<a href={url}>`) — o usuário paga na **página hospedada** da Stripe.
+5. Após pagamento (ou cancelamento), o Stripe redireciona para:
+   - **Sucesso:** `{FRONTEND_URL}/signup/sucesso?session_id={CHECKOUT_SESSION_ID}` (definido no Nest).
+   - **Cancelar:** `cancel_url` (padrão `{FRONTEND_URL}/signup` ou `FRONTEND_CHECKOUT_CANCEL_PATH`).
+6. Na rota `/signup/sucesso`, (opcional) `getSubscriptionCheckoutById` com polling leve até `status === 'APPROVED'` e `studioId` preenchido.
 
 ---
 
-## Cliente Stripe (não é Server Action)
+## Redirect (cliente)
 
-O trecho que usa `@stripe/stripe-js` / Embedded Checkout deve ficar em componente com **`'use client'`**, recebendo `clientSecret` via props (resultado da action `createSubscriptionStripeSession`).
-
-Não coloque `clientSecret` em URL pública, logs persistentes ou repositório.
+Use um **Client Component** ou handler que chame a Server Action e, em caso de sucesso, faça `redirect(stripe.url)` (Next 15+) ou `window.location.assign(stripe.url)`. Não exponha a URL em logs de produção com dados sensíveis além do necessário.
 
 ---
 

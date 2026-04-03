@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import Stripe from 'stripe';
 import {
-    CreateEmbeddedSubscriptionSessionRequest,
-    CreateEmbeddedSubscriptionSessionResponse,
+    CreateSubscriptionCheckoutSessionRequest,
+    CreateSubscriptionCheckoutSessionResponse,
     StripeSubscriptionGateway,
     StripeWebhookEvent,
 } from '../../domain/subscription-checkout/application/services/stripe-subscription-gateway';
@@ -13,6 +13,10 @@ function requireEnv(name: string): string {
         throw new Error(`Missing required environment variable: ${name}`);
     }
     return value;
+}
+
+function frontendBaseUrl(): string {
+    return requireEnv('FRONTEND_URL').replace(/\/$/, '');
 }
 
 @Injectable()
@@ -32,9 +36,9 @@ export class StripeSubscriptionGatewayService implements StripeSubscriptionGatew
         return requireEnv(`STRIPE_PRICE_CUSTOM_DOMAIN_${billingCycle}`);
     }
 
-    async createEmbeddedSubscriptionSession(
-        input: CreateEmbeddedSubscriptionSessionRequest,
-    ): Promise<CreateEmbeddedSubscriptionSessionResponse> {
+    async createSubscriptionCheckoutSession(
+        input: CreateSubscriptionCheckoutSessionRequest,
+    ): Promise<CreateSubscriptionCheckoutSessionResponse> {
         const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [
             {
                 price: this.getPlanPriceId(input.planTier, input.billingCycle),
@@ -49,11 +53,17 @@ export class StripeSubscriptionGatewayService implements StripeSubscriptionGatew
             });
         }
 
-        const params = {
+        const base = frontendBaseUrl();
+        const cancelPath = process.env.FRONTEND_CHECKOUT_CANCEL_PATH ?? '/signup';
+        const cancelUrl = cancelPath.startsWith('http')
+            ? cancelPath
+            : `${base}${cancelPath.startsWith('/') ? '' : '/'}${cancelPath}`;
+
+        const params: Stripe.Checkout.SessionCreateParams = {
             mode: 'subscription',
-            ui_mode: 'embedded_page',
             client_reference_id: input.checkoutId,
-            return_url: `${requireEnv('FRONTEND_URL')}/signup/sucesso?session_id={CHECKOUT_SESSION_ID}`,
+            success_url: `${base}/signup/sucesso?session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: cancelUrl,
             customer_email: input.customerEmail,
             line_items: lineItems,
             payment_method_types: ['card'],
@@ -62,17 +72,17 @@ export class StripeSubscriptionGatewayService implements StripeSubscriptionGatew
                 metadata: input.metadata,
                 trial_period_days: 14,
             },
-        } as unknown as Stripe.Checkout.SessionCreateParams;
+        };
 
         const session = await this.stripe.checkout.sessions.create(params);
 
-        if (!session.client_secret) {
-            throw new Error('Stripe checkout session did not return client_secret');
+        if (!session.url) {
+            throw new Error('Stripe checkout session did not return url (hosted checkout)');
         }
 
         return {
             sessionId: session.id,
-            clientSecret: session.client_secret,
+            url: session.url,
             customerId: typeof session.customer === 'string' ? session.customer : null,
         };
     }

@@ -1,6 +1,6 @@
 # Checklist E2E — REST Client + Stripe (Fase 2)
 
-Documento autossuficiente para testar no **ReservaEstudio Backend** (ou fork com a mesma API): assinatura SaaS com **Embedded Checkout**, webhooks, **Stripe Connect** para o estúdio e **PaymentIntent** para reservas.
+Documento autossuficiente para testar no **ReservaEstudio Backend** (ou fork com a mesma API): assinatura SaaS com **Checkout hospedado Stripe** (redirect com `session.url`), webhooks, **Stripe Connect** para o estúdio e **PaymentIntent** para reservas.
 
 ---
 
@@ -24,7 +24,7 @@ Arquivos HTTP de referência (ajuste variáveis `@` no topo de cada arquivo):
 
 ---
 
-## Parte A — Assinatura (Embedded Checkout + webhook)
+## Parte A — Assinatura (Checkout hospedado + webhook)
 
 **Objetivo:** checkout `PENDING_PAYMENT` → após eventos Stripe → `APPROVED` (e estúdio provisionado conforme regra do backend).
 
@@ -39,9 +39,9 @@ Arquivos HTTP de referência (ajuste variáveis `@` no topo de cada arquivo):
 4. [ ] **Consultar checkout**  
    `GET /subscription-checkout/{{checkoutId}}` → status esperado `PENDING_PAYMENT`.
 
-5. [ ] **Criar sessão Stripe (Embedded)**  
+5. [ ] **Criar sessão Stripe (hospedado)**  
    `POST /subscription-checkout/{{checkoutId}}/stripe/session`  
-   Resposta deve incluir `clientSecret` / `sessionId` (nomes exatos conforme Swagger).
+   Resposta deve incluir `url` e `sessionId` — abrir `url` no navegador para pagar na Stripe.
 
 6. [ ] **Webhook — encaminhar para a API local** (terminal separado):
 
@@ -52,8 +52,8 @@ Arquivos HTTP de referência (ajuste variáveis `@` no topo de cada arquivo):
    Copiar o **`whsec_...`** para `STRIPE_WEBHOOK_SECRET` e **reiniciar a API** se necessário.
 
 7. [ ] **Disparar fluxo de pagamento de teste**  
-   - Opção 1: completar o pagamento no **Embedded Checkout** do front (modo teste).  
-   - Opção 2: `stripe trigger checkout.session.completed` (e/ou eventos que o backend trate: `invoice.paid`, etc.) — **só funciona** se o handler do backend aceitar o payload gerado e se `metadata`/IDs baterem com a sessão criada. Para validação fiel, prefira o fluxo real do Checkout.
+   - Opção 1: na página **hospedada** da Stripe (após redirect com `session.url`), completar com cartão de teste.  
+   - Opção 2: `stripe trigger checkout.session.completed` — **só funciona** se metadata/IDs baterem. Para validação fiel, prefira o fluxo real do Checkout.
 
 8. [ ] **Conferir webhook na API**  
    Resposta tipo `received: true` (ou equivalente) e **sem erro** nos logs.
@@ -145,7 +145,7 @@ Produção: substituir por `https://api.reservaestudio.com.br` (ou seu domínio)
 
 ## Critérios de sucesso (resumo)
 
-- [ ] Sessão embedded retorna dados necessários para montar o Checkout no front.
+- [ ] Sessão retorna `url` para redirect ao Checkout hospedado da Stripe.
 - [ ] Webhook de assinatura atualiza checkout e provisiona estúdio conforme regra.
 - [ ] Connect: onboarding gera conta; status e webhooks mantêm o `Studio` coerente.
 - [ ] PaymentIntent de reserva usa destino Connect + taxa da plataforma; webhooks atualizam a reserva.

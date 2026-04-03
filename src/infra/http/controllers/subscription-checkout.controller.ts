@@ -99,16 +99,19 @@ export class SubscriptionCheckoutController {
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
     @HttpCode(HttpStatus.CREATED)
-    @ApiOperation({ summary: 'Criar sessão Stripe Embedded Checkout para assinatura' })
+    @ApiOperation({
+        summary:
+            'Criar sessão Stripe Checkout (hospedado): retorna URL para redirect no navegador',
+    })
     @ApiParam({ name: 'checkoutId' })
     @ApiResponse({
         status: 201,
-        description: 'Sessão Stripe criada com sucesso',
+        description: 'Sessão criada; abra stripe.url no mesmo browser (redirect)',
         schema: {
             example: {
                 stripe: {
                     sessionId: 'cs_test_123',
-                    clientSecret: 'cs_test_123_secret_456',
+                    url: 'https://checkout.stripe.com/c/pay/cs_test_...',
                 },
             },
         },

@@ -1,4 +1,4 @@
-# Fase 2 Stripe - Guia E2E (Embedded + Webhook)
+# Fase 2 Stripe - Guia E2E (Checkout hospedado + Webhook)
 
 ## 1) Preparar ambiente
 
@@ -38,7 +38,7 @@ stripe trigger checkout.session.completed
 
 ## 5) Critérios de sucesso
 
-- Sessão embedded retorna `clientSecret` e `sessionId`.
+- `POST .../stripe/session` retorna `sessionId` e `url` (abrir `url` no navegador para pagar na Stripe).
 - Webhook processa com `received: true`.
 - Checkout muda de `PENDING_PAYMENT` para `APPROVED`.
 - Reenvio do mesmo evento não duplica processamento (idempotência por `eventId`).

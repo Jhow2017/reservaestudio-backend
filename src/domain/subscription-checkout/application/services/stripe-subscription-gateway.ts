@@ -1,4 +1,4 @@
-export interface CreateEmbeddedSubscriptionSessionRequest {
+export interface CreateSubscriptionCheckoutSessionRequest {
     checkoutId: string;
     customerEmail: string;
     customerName: string;
@@ -8,9 +8,10 @@ export interface CreateEmbeddedSubscriptionSessionRequest {
     metadata: Record<string, string>;
 }
 
-export interface CreateEmbeddedSubscriptionSessionResponse {
+/** Checkout hospedado na Stripe (redirect); o front abre `url` no navegador. */
+export interface CreateSubscriptionCheckoutSessionResponse {
     sessionId: string;
-    clientSecret: string;
+    url: string;
     customerId?: string | null;
 }
 
@@ -23,9 +24,9 @@ export interface StripeWebhookEvent {
 }
 
 export abstract class StripeSubscriptionGateway {
-    abstract createEmbeddedSubscriptionSession(
-        input: CreateEmbeddedSubscriptionSessionRequest,
-    ): Promise<CreateEmbeddedSubscriptionSessionResponse>;
+    abstract createSubscriptionCheckoutSession(
+        input: CreateSubscriptionCheckoutSessionRequest,
+    ): Promise<CreateSubscriptionCheckoutSessionResponse>;
 
     abstract constructEvent(payload: Buffer | string, signature: string): StripeWebhookEvent;
 }

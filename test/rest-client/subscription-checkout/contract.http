@@ -29,7 +29,7 @@ Content-Type: application/json
 GET {{baseUrl}}/subscription-checkout/{{checkoutId}}
 Authorization: Bearer {{subscriberToken}}
 
-### ✅ Criar sessão Stripe Embedded Checkout
+### ✅ Criar sessão Stripe (Checkout hospedado) — resposta: stripe.url para abrir no navegador
 POST {{baseUrl}}/subscription-checkout/{{checkoutId}}/stripe/session
 Authorization: Bearer {{subscriberToken}}
 
