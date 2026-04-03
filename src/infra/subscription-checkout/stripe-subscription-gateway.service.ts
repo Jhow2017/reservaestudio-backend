@@ -6,6 +6,7 @@ import {
     StripeSubscriptionGateway,
     StripeWebhookEvent,
 } from '../../domain/subscription-checkout/application/services/stripe-subscription-gateway';
+import type { PaymentMethod } from '../../domain/subscription-checkout/enterprise/entities/subscription-checkout-session';
 
 function requireEnv(name: string): string {
     const value = process.env[name];
@@ -17,6 +18,21 @@ function requireEnv(name: string): string {
 
 function frontendBaseUrl(): string {
     return requireEnv('FRONTEND_URL').replace(/\/$/, '');
+}
+
+/** Alinha com a escolha do usuário; antes estava fixo em `card`. */
+function stripeCheckoutPaymentMethodTypes(
+    paymentMethod: PaymentMethod,
+): Stripe.Checkout.SessionCreateParams.PaymentMethodType[] {
+    switch (paymentMethod) {
+        case 'PIX':
+            return ['pix'];
+        case 'BOLETO':
+            return ['boleto'];
+        case 'CARD':
+        default:
+            return ['card'];
+    }
 }
 
 @Injectable()
@@ -59,6 +75,16 @@ export class StripeSubscriptionGatewayService implements StripeSubscriptionGatew
             ? cancelPath
             : `${base}${cancelPath.startsWith('/') ? '' : '/'}${cancelPath}`;
 
+        const paymentMethodTypes = stripeCheckoutPaymentMethodTypes(input.paymentMethod);
+
+        const subscriptionData: Stripe.Checkout.SessionCreateParams.SubscriptionData = {
+            metadata: input.metadata,
+        };
+        // Boleto: período de teste costuma ser incompatível com assinatura paga via boleto (docs Stripe).
+        if (input.paymentMethod !== 'BOLETO') {
+            subscriptionData.trial_period_days = 14;
+        }
+
         const params: Stripe.Checkout.SessionCreateParams = {
             mode: 'subscription',
             client_reference_id: input.checkoutId,
@@ -66,13 +92,19 @@ export class StripeSubscriptionGatewayService implements StripeSubscriptionGatew
             cancel_url: cancelUrl,
             customer_email: input.customerEmail,
             line_items: lineItems,
-            payment_method_types: ['card'],
+            payment_method_types: paymentMethodTypes,
+            locale: 'pt-BR',
             metadata: input.metadata,
-            subscription_data: {
-                metadata: input.metadata,
-                trial_period_days: 14,
-            },
+            subscription_data: subscriptionData,
         };
+
+        if (input.paymentMethod === 'BOLETO') {
+            params.payment_method_options = {
+                boleto: {
+                    expires_after_days: 3,
+                },
+            };
+        }
 
         const session = await this.stripe.checkout.sessions.create(params);
 

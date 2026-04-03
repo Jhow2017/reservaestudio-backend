@@ -1,3 +1,5 @@
+import type { PaymentMethod } from '../../enterprise/entities/subscription-checkout-session';
+
 export interface CreateSubscriptionCheckoutSessionRequest {
     checkoutId: string;
     customerEmail: string;
@@ -5,6 +7,8 @@ export interface CreateSubscriptionCheckoutSessionRequest {
     planTier: 'STARTER' | 'PROFESSIONAL' | 'ENTERPRISE';
     billingCycle: 'MONTHLY' | 'ANNUAL';
     domainType: 'SUBDOMAIN' | 'CUSTOM_DOMAIN';
+    /** Escolha do usuário no start do checkout; define os tipos aceitos na sessão Stripe. */
+    paymentMethod: PaymentMethod;
     metadata: Record<string, string>;
 }
 

@@ -55,6 +55,7 @@ export class CreateSubscriptionCheckoutStripeSessionUseCase {
                 planTier: checkout.planTier,
                 billingCycle: checkout.billingCycle,
                 domainType: checkout.domainType,
+                paymentMethod: checkout.paymentMethod,
                 metadata: {
                     checkoutId: checkout.id.toString(),
                     subscriberUserId: checkout.subscriberUserId ?? '',
