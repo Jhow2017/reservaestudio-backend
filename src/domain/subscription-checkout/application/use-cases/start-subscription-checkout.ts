@@ -36,7 +36,7 @@ export class SubdomainUnavailableError extends UseCaseError {
     constructor() { super('Subdomain is not available'); }
 }
 
-const FINAL_SUBDOMAIN_REGEX = /^[a-z]+(?:-[a-z]+)*$/;
+const FINAL_SUBDOMAIN_REGEX = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 function applySuffixHeuristics(value: string): string {
     if (value.includes('-')) return value;
@@ -59,8 +59,8 @@ function normalizeSubdomain(raw: string): string {
         .replace(/[\u0300-\u036f]/g, '');
 
     const lower = withoutAccents.toLowerCase();
-    const onlyLettersSpacesHyphen = lower.replace(/[^a-z\s-]/g, '');
-    const withSuffixHeuristics = applySuffixHeuristics(onlyLettersSpacesHyphen.replace(/\s+/g, ''));
+    const onlyLettersDigitsSpacesHyphen = lower.replace(/[^a-z0-9\s-]/g, '');
+    const withSuffixHeuristics = applySuffixHeuristics(onlyLettersDigitsSpacesHyphen.replace(/\s+/g, ''));
     const spacesToHyphen = withSuffixHeuristics.replace(/\s+/g, '-');
     const collapseHyphens = spacesToHyphen.replace(/-+/g, '-');
     const trimmed = collapseHyphens.replace(/^-+|-+$/g, '');
