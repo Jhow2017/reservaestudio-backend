@@ -1,5 +1,5 @@
 import { Body, Controller, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
-import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateBookingMercadoPagoPaymentUseCase } from '../../../domain/booking/application/use-cases/create-booking-mercadopago-payment';
 import { Public } from '../../auth/public';
 import { CreateBookingMercadoPagoPaymentDto } from '../dtos/create-booking-mercadopago-payment.dto';
@@ -15,8 +15,10 @@ export class CreateBookingMercadoPagoPaymentController {
     @ApiOperation({ summary: 'Criar pagamento Mercado Pago (checkout transparente) para a reserva' })
     @ApiParam({ name: 'studioSlug' })
     @ApiParam({ name: 'bookingId' })
+    @ApiBody({ type: CreateBookingMercadoPagoPaymentDto })
     @ApiResponse({ status: 201, description: 'Pagamento criado no MP' })
-    @ApiResponse({ status: 404, description: 'Reserva/estúdio inválido ou MP não configurado' })
+    @ApiResponse({ status: 400, description: 'Validação do corpo, provedor não é MP, vendedor sem MP, resposta MP sem id' })
+    @ApiResponse({ status: 404, description: 'Reserva/estúdio inválido' })
     async handle(
         @Param('studioSlug') studioSlug: string,
         @Param('bookingId') bookingId: string,

@@ -1,8 +1,9 @@
 import { Inject } from '@nestjs/common';
 import { BookingsRepository } from '../repositories/bookings-repository';
 import { StudiosRepository } from '../repositories/studios-repository';
-import { MercadoPagoWebhookEventsRepository } from '../../../subscription-checkout/application/repositories/mercadopago-webhook-events-repository';
+import { MercadoPagoWebhookEventsRepository } from '../../../shared/application/repositories/mercadopago-webhook-events-repository';
 import { MercadoPagoSellerBookingPaymentReader } from '../services/mercado-pago-seller-booking-payment-reader';
+import { MercadoPagoSellerAccessTokenResolver } from '../services/mercado-pago-seller-access-token-resolver';
 
 export interface HandleMercadoPagoReservationWebhookRequest {
     body: Record<string, unknown>;
@@ -25,6 +26,8 @@ export class HandleMercadoPagoReservationWebhookUseCase {
         private bookingsRepository: BookingsRepository,
         @Inject(StudiosRepository)
         private studiosRepository: StudiosRepository,
+        @Inject(MercadoPagoSellerAccessTokenResolver)
+        private sellerAccessTokenResolver: MercadoPagoSellerAccessTokenResolver,
         @Inject(MercadoPagoSellerBookingPaymentReader)
         private sellerPaymentReader: MercadoPagoSellerBookingPaymentReader,
     ) { }
@@ -62,9 +65,14 @@ export class HandleMercadoPagoReservationWebhookUseCase {
             return { received: true, ignored: true };
         }
 
+        const tokenResult = await this.sellerAccessTokenResolver.resolve(studio.ownerUserId);
+        if (!tokenResult.ok) {
+            return { received: true };
+        }
+
         let payment: Record<string, unknown>;
         try {
-            payment = await this.sellerPaymentReader.getPayment(studio.ownerUserId, resourceId);
+            payment = await this.sellerPaymentReader.getPayment(tokenResult.accessToken, resourceId);
         } catch {
             return { received: true };
         }

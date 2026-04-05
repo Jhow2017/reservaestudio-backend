@@ -1,12 +1,13 @@
 import { Inject } from '@nestjs/common';
+import { MercadoPagoPaymentMissingIdError } from '../../../../core/errors/mercadopago-payment-missing-id.error';
 import { BookingsRepository } from '../repositories/bookings-repository';
 import { StudiosRepository } from '../repositories/studios-repository';
-import { UsersRepository } from '../../../auth/application/repositories/users-repository';
 import { StudioNotFoundError } from './create-public-booking';
 import { MercadoPagoSellerNotConnectedError } from '../../../auth/application/errors/mercadopago-seller-not-connected.error';
 import { BookingNotFoundForPaymentError } from './create-booking-payment-intent';
 import { MercadoPagoBookingCustomerPaymentGateway } from '../services/mercado-pago-booking-customer-payment-gateway';
 import { MercadoPagoBookingApplicationFeeConfig } from '../services/mercado-pago-booking-application-fee-config';
+import { MercadoPagoSellerAccessTokenResolver } from '../services/mercado-pago-seller-access-token-resolver';
 import { UseCaseError } from '../../../../core/errors/use-case-error';
 
 export class BookingPayoutProviderNotMercadoPagoError extends UseCaseError {
@@ -43,8 +44,8 @@ export class CreateBookingMercadoPagoPaymentUseCase {
         private bookingsRepository: BookingsRepository,
         @Inject(StudiosRepository)
         private studiosRepository: StudiosRepository,
-        @Inject(UsersRepository)
-        private usersRepository: UsersRepository,
+        @Inject(MercadoPagoSellerAccessTokenResolver)
+        private sellerAccessTokenResolver: MercadoPagoSellerAccessTokenResolver,
         @Inject(MercadoPagoBookingCustomerPaymentGateway)
         private mercadoPagoGateway: MercadoPagoBookingCustomerPaymentGateway,
         @Inject(MercadoPagoBookingApplicationFeeConfig)
@@ -63,8 +64,8 @@ export class CreateBookingMercadoPagoPaymentUseCase {
             throw new MercadoPagoSellerNotConnectedError();
         }
 
-        const owner = await this.usersRepository.findById(studio.ownerUserId);
-        if (!owner?.mercadoPagoAccessToken || !owner.mercadoPagoPublicKey) {
+        const tokenResult = await this.sellerAccessTokenResolver.resolve(studio.ownerUserId);
+        if (!tokenResult.ok) {
             throw new MercadoPagoSellerNotConnectedError();
         }
 
@@ -81,12 +82,12 @@ export class CreateBookingMercadoPagoPaymentUseCase {
 
         const feePercent = this.feeConfig.getPercent();
         let applicationFeeReais: number | undefined;
-        if (owner.mercadoPagoConnectionType === 'OAUTH' && feePercent > 0) {
+        if (tokenResult.connectionType === 'OAUTH' && feePercent > 0) {
             applicationFeeReais = Math.round(amountReais * (feePercent / 100) * 100) / 100;
         }
 
         const payment = await this.mercadoPagoGateway.createPayment({
-            studioOwnerUserId: studio.ownerUserId,
+            sellerAccessToken: tokenResult.accessToken,
             bookingId: booking.id.toString(),
             amountReais,
             description,
@@ -103,7 +104,7 @@ export class CreateBookingMercadoPagoPaymentUseCase {
         const idRaw = payment.id;
         const mercadoPagoPaymentId = idRaw !== undefined ? String(idRaw) : '';
         if (!mercadoPagoPaymentId) {
-            throw new Error('Mercado Pago payment response missing id');
+            throw new MercadoPagoPaymentMissingIdError();
         }
 
         booking.assignMercadoPagoPaymentId(mercadoPagoPaymentId);

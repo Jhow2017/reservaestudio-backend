@@ -1,7 +1,9 @@
 import { Inject } from '@nestjs/common';
 import { UseCaseError } from '../../../../core/errors/use-case-error';
 import { Role } from '../../../auth/enterprise/value-objects/role';
+import { MercadoPagoPaymentMissingIdError } from '../../../../core/errors/mercadopago-payment-missing-id.error';
 import { MercadoPagoPlatformSubscriptionGateway } from '../services/mercadopago-platform-subscription-gateway';
+import { MercadoPagoBoletoBankIdConfig } from '../services/mercadopago-boleto-bank-id-config';
 import { SubscriptionCheckoutSessionsRepository } from '../repositories/subscription-checkout-sessions-repository';
 import { SubscriptionCheckoutAccessDeniedError, SubscriptionCheckoutSessionNotFoundError } from './get-subscription-checkout';
 import { SubscriptionCheckoutAlreadyApprovedError } from './create-subscription-checkout-stripe-session';
@@ -27,21 +29,23 @@ export interface CreateMercadoPagoSubscriptionTransparentPaymentResponse {
     pointOfInteraction?: unknown;
 }
 
-function paymentMethodIdForCheckout(paymentMethod: 'CARD' | 'PIX' | 'BOLETO'): string {
-    if (paymentMethod === 'PIX') return 'pix';
-    if (paymentMethod === 'BOLETO') {
-        return (process.env.MERCADOPAGO_BOLETO_BANK_ID ?? 'bolbradesco').trim();
-    }
-    return '';
-}
-
 export class CreateMercadoPagoSubscriptionTransparentPaymentUseCase {
     constructor(
         @Inject(SubscriptionCheckoutSessionsRepository)
         private checkoutSessionsRepository: SubscriptionCheckoutSessionsRepository,
         @Inject(MercadoPagoPlatformSubscriptionGateway)
         private mercadoPagoGateway: MercadoPagoPlatformSubscriptionGateway,
+        @Inject(MercadoPagoBoletoBankIdConfig)
+        private boletoBankIdConfig: MercadoPagoBoletoBankIdConfig,
     ) { }
+
+    private paymentMethodIdForCheckout(paymentMethod: 'CARD' | 'PIX' | 'BOLETO'): string {
+        if (paymentMethod === 'PIX') return 'pix';
+        if (paymentMethod === 'BOLETO') {
+            return this.boletoBankIdConfig.getBoletoBankPaymentMethodId();
+        }
+        return '';
+    }
 
     async execute(
         req: CreateMercadoPagoSubscriptionTransparentPaymentRequest,
@@ -65,7 +69,7 @@ export class CreateMercadoPagoSubscriptionTransparentPaymentUseCase {
             throw new SubscriptionCheckoutTransparentPaymentWrongMethodError();
         }
 
-        const pmId = paymentMethodIdForCheckout(checkout.paymentMethod);
+        const pmId = this.paymentMethodIdForCheckout(checkout.paymentMethod);
         const description = `Assinatura Reserva Estúdio — ${checkout.planTier} (${checkout.billingCycle})`;
 
         if (!pmId) {
@@ -85,7 +89,7 @@ export class CreateMercadoPagoSubscriptionTransparentPaymentUseCase {
         const idRaw = payment.id;
         const mercadoPagoPaymentId = idRaw !== undefined ? String(idRaw) : '';
         if (!mercadoPagoPaymentId) {
-            throw new Error('Mercado Pago payment response missing id');
+            throw new MercadoPagoPaymentMissingIdError();
         }
 
         checkout.bindMercadoPagoPayment(mercadoPagoPaymentId);

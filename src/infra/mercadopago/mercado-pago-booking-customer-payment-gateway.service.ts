@@ -4,21 +4,16 @@ import {
     MercadoPagoBookingCustomerPaymentParams,
 } from '../../domain/booking/application/services/mercado-pago-booking-customer-payment-gateway';
 import { MercadoPagoBookingPaymentService } from './mercado-pago-booking-payment.service';
-import { MercadoPagoOwnerCredentialsService } from './mercado-pago-owner-credentials.service';
 
 @Injectable()
 export class MercadoPagoBookingCustomerPaymentGatewayService extends MercadoPagoBookingCustomerPaymentGateway {
-    constructor(
-        private readonly ownerCredentials: MercadoPagoOwnerCredentialsService,
-        private readonly bookingPayment: MercadoPagoBookingPaymentService,
-    ) {
+    constructor(private readonly bookingPayment: MercadoPagoBookingPaymentService) {
         super();
     }
 
     async createPayment(params: MercadoPagoBookingCustomerPaymentParams): Promise<Record<string, unknown>> {
-        const sellerAccessToken = await this.ownerCredentials.getValidAccessTokenForUser(params.studioOwnerUserId);
         return this.bookingPayment.createPayment({
-            sellerAccessToken,
+            sellerAccessToken: params.sellerAccessToken,
             bookingId: params.bookingId,
             amountReais: params.amountReais,
             description: params.description,

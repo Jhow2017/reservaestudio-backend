@@ -1,13 +1,18 @@
 import { createHmac, timingSafeEqual } from 'crypto';
 import { Injectable, Logger } from '@nestjs/common';
+import { MercadoPagoWebhookSignatureVerifierPort } from '../../domain/shared/application/ports/mercadopago-webhook-signature-verifier.port';
 
 /**
  * Valida assinatura HMAC dos webhooks Mercado Pago (header x-signature).
  * Use MERCADOPAGO_WEBHOOK_SECRET_KEY (conforme padrão GigManager / doc operacional).
  */
 @Injectable()
-export class MercadoPagoWebhookSignatureValidator {
+export class MercadoPagoWebhookSignatureValidator extends MercadoPagoWebhookSignatureVerifierPort {
     private readonly logger = new Logger(MercadoPagoWebhookSignatureValidator.name);
+
+    constructor() {
+        super();
+    }
 
     isValid(rawBodyForSigning: string, signatureHeader: string | undefined): boolean {
         const secret = process.env.MERCADOPAGO_WEBHOOK_SECRET_KEY?.trim();

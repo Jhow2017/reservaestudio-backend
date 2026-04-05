@@ -86,7 +86,8 @@ import { BrDomainAvailabilityGateway } from '../../domain/domain-availability/ap
 import { IsavailUdpBrDomainAvailabilityGateway } from '../domain-availability/isavail-udp-br-domain-availability.gateway';
 import { PlatformSubscriptionPaymentConfig } from '../../domain/subscription-checkout/application/services/platform-subscription-payment-config';
 import { EnvPlatformSubscriptionPaymentConfigService } from '../subscription-checkout/env-platform-subscription-payment-config.service';
-import { MercadoPagoWebhookEventsRepository } from '../../domain/subscription-checkout/application/repositories/mercadopago-webhook-events-repository';
+import { MercadoPagoWebhookEventsRepository } from '../../domain/shared/application/repositories/mercadopago-webhook-events-repository';
+import { MercadoPagoWebhookSignatureVerifierPort } from '../../domain/shared/application/ports/mercadopago-webhook-signature-verifier.port';
 import { PrismaMercadoPagoWebhookEventsRepository } from '../database/prisma/repositories/prisma-mercadopago-webhook-events-repository';
 import { MercadoPagoPlatformSubscriptionGateway } from '../../domain/subscription-checkout/application/services/mercadopago-platform-subscription-gateway';
 import { MercadoPagoPlatformSubscriptionGatewayService } from '../mercadopago/mercado-pago-platform-subscription-gateway.service';
@@ -112,7 +113,12 @@ import { ProcessMercadoPagoOauthCallbackUseCase } from '../../domain/auth/applic
 import { SaveMercadoPagoManualCredentialsUseCase } from '../../domain/auth/application/use-cases/save-mercadopago-manual-credentials';
 import { HandleMercadoPagoDeauthorizationWebhookUseCase } from '../../domain/auth/application/use-cases/handle-mercadopago-deauthorization-webhook';
 import { MercadoPagoBookingPaymentService } from '../mercadopago/mercado-pago-booking-payment.service';
-import { MercadoPagoOwnerCredentialsService } from '../mercadopago/mercado-pago-owner-credentials.service';
+import { MercadoPagoSellerAccessTokenResolver } from '../../domain/booking/application/services/mercado-pago-seller-access-token-resolver';
+import { MercadoPagoSellerAccessTokenResolverService } from '../mercadopago/mercado-pago-seller-access-token-resolver.service';
+import { MercadoPagoBoletoBankIdConfig } from '../../domain/subscription-checkout/application/services/mercadopago-boleto-bank-id-config';
+import { EnvMercadoPagoBoletoBankIdConfigService } from '../mercadopago/env-mercadopago-boleto-bank-id-config.service';
+import { PublicFrontendBaseUrl } from '../../domain/auth/application/services/public-frontend-base-url';
+import { EnvPublicFrontendBaseUrlService } from '../auth/env-public-frontend-base-url.service';
 import { MercadoPagoSellerBookingPaymentReader } from '../../domain/booking/application/services/mercado-pago-seller-booking-payment-reader';
 import { MercadoPagoSellerBookingPaymentReaderService } from '../mercadopago/mercado-pago-seller-booking-payment-reader.service';
 import { MercadoPagoBookingCustomerPaymentGateway } from '../../domain/booking/application/services/mercado-pago-booking-customer-payment-gateway';
@@ -210,7 +216,9 @@ import { CreateBookingMercadoPagoPaymentController } from './controllers/create-
         MercadoPagoOauthService,
         MercadoPagoOauthStateStore,
         MercadoPagoBookingPaymentService,
-        MercadoPagoOwnerCredentialsService,
+        MercadoPagoSellerAccessTokenResolverService,
+        EnvMercadoPagoBoletoBankIdConfigService,
+        EnvPublicFrontendBaseUrlService,
         {
             provide: SubscriptionCheckoutSessionsRepository,
             useClass: PrismaSubscriptionCheckoutSessionsRepository,
@@ -222,6 +230,22 @@ import { CreateBookingMercadoPagoPaymentController } from './controllers/create-
         {
             provide: MercadoPagoWebhookEventsRepository,
             useClass: PrismaMercadoPagoWebhookEventsRepository,
+        },
+        {
+            provide: MercadoPagoWebhookSignatureVerifierPort,
+            useExisting: MercadoPagoWebhookSignatureValidator,
+        },
+        {
+            provide: MercadoPagoSellerAccessTokenResolver,
+            useClass: MercadoPagoSellerAccessTokenResolverService,
+        },
+        {
+            provide: MercadoPagoBoletoBankIdConfig,
+            useClass: EnvMercadoPagoBoletoBankIdConfigService,
+        },
+        {
+            provide: PublicFrontendBaseUrl,
+            useClass: EnvPublicFrontendBaseUrlService,
         },
         {
             provide: PlatformSubscriptionPaymentConfig,

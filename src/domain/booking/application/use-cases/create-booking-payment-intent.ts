@@ -1,10 +1,10 @@
 import { Inject } from '@nestjs/common';
 import { UseCaseError } from '../../../../core/errors/use-case-error';
-import { UsersRepository } from '../../../auth/application/repositories/users-repository';
 import { MercadoPagoSellerNotConnectedError } from '../../../auth/application/errors/mercadopago-seller-not-connected.error';
 import { BookingPaymentGateway } from '../services/booking-payment-gateway';
 import { BookingsRepository } from '../repositories/bookings-repository';
 import { StudiosRepository } from '../repositories/studios-repository';
+import { MercadoPagoSellerAccessTokenResolver } from '../services/mercado-pago-seller-access-token-resolver';
 
 export interface CreateBookingPaymentIntentRequest {
     studioSlug: string;
@@ -37,8 +37,8 @@ export class CreateBookingPaymentIntentUseCase {
         private bookingsRepository: BookingsRepository,
         @Inject(StudiosRepository)
         private studiosRepository: StudiosRepository,
-        @Inject(UsersRepository)
-        private usersRepository: UsersRepository,
+        @Inject(MercadoPagoSellerAccessTokenResolver)
+        private sellerAccessTokenResolver: MercadoPagoSellerAccessTokenResolver,
         @Inject(BookingPaymentGateway)
         private bookingPaymentGateway: BookingPaymentGateway,
     ) { }
@@ -56,13 +56,13 @@ export class CreateBookingPaymentIntentUseCase {
             if (!studio.ownerUserId) {
                 throw new MercadoPagoSellerNotConnectedError();
             }
-            const owner = await this.usersRepository.findById(studio.ownerUserId);
-            if (!owner?.mercadoPagoAccessToken || !owner.mercadoPagoPublicKey) {
+            const tokenResult = await this.sellerAccessTokenResolver.resolve(studio.ownerUserId);
+            if (!tokenResult.ok) {
                 throw new MercadoPagoSellerNotConnectedError();
             }
             return {
                 provider: 'mercadopago',
-                publicKey: owner.mercadoPagoPublicKey,
+                publicKey: tokenResult.publicKey,
                 amountReais: booking.totalPrice,
                 bookingId: booking.id.toString(),
                 studioSlug: studio.slug,

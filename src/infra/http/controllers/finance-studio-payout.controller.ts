@@ -1,5 +1,5 @@
 import { Body, Controller, Param, Patch, Req, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
 import { User } from '../../../domain/auth/enterprise/entities/user';
 import { UpdateStudioPayoutProviderUseCase } from '../../../domain/booking/application/use-cases/update-studio-payout-provider';
@@ -16,8 +16,12 @@ export class FinanceStudioPayoutController {
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Definir recebimento de reservas: Mercado Pago ou Stripe Connect' })
     @ApiParam({ name: 'studioId' })
+    @ApiBody({ type: UpdateStudioPayoutProviderDto })
     @ApiResponse({ status: 200, description: 'Atualizado' })
-    @ApiResponse({ status: 400, description: 'Stripe Connect incompleto ao escolher STRIPE' })
+    @ApiResponse({ status: 400, description: 'Stripe Connect incompleto ao escolher STRIPE ou domínio inválido' })
+    @ApiResponse({ status: 401, description: 'Não autenticado' })
+    @ApiResponse({ status: 403, description: 'Sem permissão para o estúdio' })
+    @ApiResponse({ status: 404, description: 'Estúdio não encontrado' })
     async patchPayoutProvider(
         @Param('studioId') studioId: string,
         @Body() body: UpdateStudioPayoutProviderDto,

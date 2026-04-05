@@ -1,7 +1,7 @@
 import { Inject } from '@nestjs/common';
 import { ApproveSubscriptionCheckoutUseCase } from './approve-subscription-checkout';
 import { SubscriptionCheckoutSessionsRepository } from '../repositories/subscription-checkout-sessions-repository';
-import { MercadoPagoWebhookEventsRepository } from '../repositories/mercadopago-webhook-events-repository';
+import { MercadoPagoWebhookEventsRepository } from '../../../shared/application/repositories/mercadopago-webhook-events-repository';
 import { MercadoPagoPlatformSubscriptionGateway } from '../services/mercadopago-platform-subscription-gateway';
 
 export interface HandleMercadoPagoSubscriptionWebhookRequest {

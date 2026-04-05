@@ -162,6 +162,14 @@ export class HttpExceptionFilter implements ExceptionFilter {
             return HttpStatus.BAD_REQUEST;
         }
 
+        if (exception.constructor.name === 'BookingPayoutProviderNotMercadoPagoError') {
+            return HttpStatus.BAD_REQUEST;
+        }
+
+        if (exception.constructor.name === 'MercadoPagoPaymentMissingIdError') {
+            return HttpStatus.BAD_REQUEST;
+        }
+
         if (exception.constructor.name === 'StudioStripePayoutNotReadyError') {
             return HttpStatus.BAD_REQUEST;
         }

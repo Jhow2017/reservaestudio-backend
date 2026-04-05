@@ -23,6 +23,7 @@ export class CreateBookingPaymentIntentController {
         status: 201,
         description: 'Stripe: PaymentIntent; Mercado Pago: dados para tokenizar no front',
     })
+    @ApiResponse({ status: 400, description: 'Provedor MP sem conta do vendedor conectada ou resposta inválida' })
     @ApiResponse({ status: 404, description: 'Reserva não encontrada ou studio indisponível para cobrança' })
     async handle(
         @Param('studioSlug') studioSlug: string,

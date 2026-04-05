@@ -1,5 +1,5 @@
 export interface MercadoPagoBookingCustomerPaymentParams {
-    studioOwnerUserId: string;
+    sellerAccessToken: string;
     bookingId: string;
     amountReais: number;
     description: string;

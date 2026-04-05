@@ -165,6 +165,10 @@ export class SubscriptionCheckoutController {
     @ApiOperation({ summary: 'Mercado Pago: criar preapproval pendente (assinatura cartão, 1ª etapa)' })
     @ApiParam({ name: 'checkoutId' })
     @ApiResponse({ status: 201, description: 'Preapproval criado' })
+    @ApiResponse({ status: 400, description: 'Checkout não é MP, status inválido ou regra de domínio' })
+    @ApiResponse({ status: 401, description: 'Não autenticado' })
+    @ApiResponse({ status: 403, description: 'Acesso negado para este checkout' })
+    @ApiResponse({ status: 404, description: 'Checkout não encontrado' })
     async createMercadoPagoPreapproval(@Param('checkoutId') checkoutId: string, @Req() req: Request) {
         const user = req.user as User;
         const result = await this.createMercadoPagoSubscriptionPreapprovalUseCase.execute({
@@ -182,6 +186,11 @@ export class SubscriptionCheckoutController {
     @ApiOperation({ summary: 'Mercado Pago: anexar token de cartão ao preapproval (2ª etapa)' })
     @ApiParam({ name: 'checkoutId' })
     @ApiBody({ type: AttachMercadoPagoPreapprovalCardDto })
+    @ApiResponse({ status: 200, description: 'Cartão anexado ao preapproval' })
+    @ApiResponse({ status: 400, description: 'Preapproval ausente, método inválido ou token inválido' })
+    @ApiResponse({ status: 401, description: 'Não autenticado' })
+    @ApiResponse({ status: 403, description: 'Acesso negado para este checkout' })
+    @ApiResponse({ status: 404, description: 'Checkout não encontrado' })
     async attachMercadoPagoCard(
         @Param('checkoutId') checkoutId: string,
         @Body() body: AttachMercadoPagoPreapprovalCardDto,
@@ -204,6 +213,14 @@ export class SubscriptionCheckoutController {
     @ApiOperation({ summary: 'Mercado Pago: pagamento transparente (PIX / boleto)' })
     @ApiParam({ name: 'checkoutId' })
     @ApiBody({ type: MercadoPagoSubscriptionTransparentPaymentDto })
+    @ApiResponse({
+        status: 201,
+        description: 'Pagamento criado; retorna id, status e pointOfInteraction (PIX/boleto)',
+    })
+    @ApiResponse({ status: 400, description: 'Checkout não é MP transparente, método errado ou resposta MP sem id' })
+    @ApiResponse({ status: 401, description: 'Não autenticado' })
+    @ApiResponse({ status: 403, description: 'Acesso negado para este checkout' })
+    @ApiResponse({ status: 404, description: 'Checkout não encontrado' })
     async createMercadoPagoTransparentPayment(
         @Param('checkoutId') checkoutId: string,
         @Body() body: MercadoPagoSubscriptionTransparentPaymentDto,

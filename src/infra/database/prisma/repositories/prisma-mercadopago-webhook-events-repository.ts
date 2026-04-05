@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
-import { MercadoPagoWebhookEventsRepository } from '../../../../domain/subscription-checkout/application/repositories/mercadopago-webhook-events-repository';
+import { MercadoPagoWebhookEventsRepository } from '../../../../domain/shared/application/repositories/mercadopago-webhook-events-repository';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 
