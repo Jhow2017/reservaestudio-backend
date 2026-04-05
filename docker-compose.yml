@@ -1,18 +1,55 @@
-# Postgres local ReservaEstudio — porta 5433 no host, DB `reservaestudio`.
-# DATABASE_URL: postgresql://postgres:postgres@localhost:5433/reservaestudio?schema=public
+# Traefik roda em outro stack na VPS. Crie a rede uma vez:
+#   docker network create traefik-proxy
+#
+# O backend sobe neste compose e anexa à rede `traefik-proxy` só para o proxy enxergar o serviço.
+
 services:
+  backend:
+    build: .
+    container_name: reservaestudio-backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      PORT: 3000
+    depends_on:
+      postgres:
+        condition: service_healthy
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik-proxy
+      - traefik.http.routers.reservaestudio.rule=Host(`reservaestudio.com`,`www.reservaestudio.com`)
+      - traefik.http.routers.reservaestudio.entrypoints=websecure
+      - traefik.http.routers.reservaestudio.tls.certresolver=letsencrypt
+      - traefik.http.services.reservaestudio.loadbalancer.server.port=3000
+    networks:
+      - app
+      - traefik-proxy
+
   postgres:
     image: postgres:16-alpine
     container_name: reservaestudio-postgres
-    restart: always
+    restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       POSTGRES_DB: reservaestudio
-    ports:
-      - "5433:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - reservaestudio_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d reservaestudio"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - app
 
 volumes:
-  postgres_data:
+  reservaestudio_postgres_data:
+
+networks:
+  traefik-proxy:
+    external: true
+  app:
+    driver: bridge

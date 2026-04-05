@@ -11,17 +11,20 @@ Sempre seguir o padrão arquitetural já usado em `auth`.
 
 - `core/`: abstrações compartilhadas (ex.: `Either`, erros base, `UniqueEntityID`).
 - `domain/{context}/enterprise`: entidades e value objects.
-- `domain/{context}/application`: use-cases, contratos de repositório, portas e serviços.
+- `domain/{context}/application`: use-cases, contratos de repositório, portas e serviços de **aquele** contexto.
+- `domain/shared/application`: contratos e serviços **transversais** usados por mais de um contexto (ex.: repositório de idempotência de webhook, porta de verificação de assinatura). Evitar duplicar o mesmo contrato em `booking` e `subscription-checkout` só para “pertencer” ao contexto.
 - `infra/`: adapters e implementações (Prisma, HTTP controllers, guards, módulos Nest, email, etc.).
 
 ## Regras obrigatórias
 
 - Use case fica em `domain/.../application/use-cases`, sem dependência de `infra`.
-- Interface de repositório fica em `domain/.../application/repositories`.
+- Interface de repositório fica em `domain/.../application/repositories` (ou em `domain/shared/.../repositories` se for compartilhada entre contextos).
 - Implementação Prisma fica em `infra/database/prisma/repositories`.
 - Conversão persistência <-> domínio deve usar mapper em `infra/database/prisma/mappers`.
 - Controller HTTP deve ser fino: validar DTO, chamar use case e mapear resposta.
-- Erros de negócio devem ser explícitos no domínio (não em infra).
+- Erros de negócio devem ser explícitos no domínio (não em infra): subclasses de `UseCaseError`. Se o mesmo erro for reutilizado por vários contextos, preferir `core/errors`; se for específico de um fluxo de um contexto, pode ficar ao lado do use case ou em um arquivo de erros daquele contexto.
+- **Configuração e ambiente:** use cases não leem `process.env`. Expor necessidades via classe abstrata no domínio (ex.: `PublicFrontendBaseUrl`, `MercadoPagoBoletoBankIdConfig`) e implementar em `infra/` lendo variáveis de ambiente.
+- **Portas de integração:** quando o use case precisa de um comportamento técnico (validar assinatura de webhook, trocar token OAuth, etc.), definir **porta** em `domain/.../application/ports` (ou `domain/shared/.../ports`). O controller HTTP também deve depender da **porta** quando couber, não da classe concreta de `infra`.
 - Não acessar Prisma diretamente em controller/use case.
 - Toda entrada HTTP deve passar por DTO com `class-validator`.
 - Em DTOs numéricos/query params, usar `class-transformer` (`@Transform`) para converter tipos.
@@ -34,6 +37,8 @@ Sempre seguir o padrão arquitetural já usado em `auth`.
 - Rotas com path/query params devem usar `@ApiParam` e `@ApiQuery` quando aplicável.
 - DTOs de request/response devem usar `@ApiProperty`/`@ApiPropertyOptional` com exemplos.
 - Rotas protegidas devem usar `@ApiBearerAuth`.
+- Webhooks públicos: documentar header relevante (ex.: `@ApiHeader` para assinatura) e `400` quando a validação falhar; corpo tipado com DTO quando o payload for estável.
+- Novos `UseCaseError`: registrar o mapeamento HTTP em `infra/http/filters/http-exception.filter.ts` quando o status não for o padrão genérico.
 
 ## Convenções de implementação
 
