@@ -22,10 +22,20 @@ export class MercadoPagoPlatformSubscriptionGatewayService extends MercadoPagoPl
         return requireMercadoPagoEnv('MERCADOPAGO_ACCESS_TOKEN');
     }
 
-    private async mpFetch<T>(path: string, init: RequestInit): Promise<T> {
+    /**
+     * Assinaturas (preapproval) usam a raiz `https://api.mercadopago.com/preapproval` — sem segmento `/v1`.
+     * Pagamentos usam `/v1/payments` etc.
+     */
+    private async mpFetch<T>(
+        path: string,
+        init: RequestInit,
+        options?: { includeApiVersion?: boolean },
+    ): Promise<T> {
         const base = mercadoPagoApiBaseUrl();
         const version = mercadoPagoApiVersion();
-        const res = await fetch(`${base}/${version}${path}`, {
+        const includeVersion = options?.includeApiVersion !== false;
+        const url = includeVersion ? `${base}/${version}${path}` : `${base}${path}`;
+        const res = await fetch(url, {
             ...init,
             headers: {
                 Authorization: `Bearer ${this.accessToken()}`,
@@ -61,13 +71,17 @@ export class MercadoPagoPlatformSubscriptionGatewayService extends MercadoPagoPl
             notification_url: mercadoPagoSubscriptionWebhookUrl(),
         };
 
-        const res = await this.mpFetch<{ id?: string }>('/preapproval', {
-            method: 'POST',
-            body: JSON.stringify(body),
-            headers: {
-                'X-Idempotency-Key': randomUUID(),
+        const res = await this.mpFetch<{ id?: string }>(
+            '/preapproval',
+            {
+                method: 'POST',
+                body: JSON.stringify(body),
+                headers: {
+                    'X-Idempotency-Key': randomUUID(),
+                },
             },
-        });
+            { includeApiVersion: false },
+        );
         if (!res.id) {
             throw new Error('Mercado Pago preapproval did not return id');
         }
@@ -75,13 +89,17 @@ export class MercadoPagoPlatformSubscriptionGatewayService extends MercadoPagoPl
     }
 
     async attachCardToPreapproval(preapprovalId: string, cardTokenId: string): Promise<unknown> {
-        return this.mpFetch(`/preapproval/${preapprovalId}`, {
-            method: 'PUT',
-            body: JSON.stringify({ card_token_id: cardTokenId }),
-            headers: {
-                'X-Idempotency-Key': randomUUID(),
+        return this.mpFetch(
+            `/preapproval/${preapprovalId}`,
+            {
+                method: 'PUT',
+                body: JSON.stringify({ card_token_id: cardTokenId }),
+                headers: {
+                    'X-Idempotency-Key': randomUUID(),
+                },
             },
-        });
+            { includeApiVersion: false },
+        );
     }
 
     async createTransparentPayment(input: CreateTransparentPaymentInput): Promise<Record<string, unknown>> {
@@ -122,6 +140,10 @@ export class MercadoPagoPlatformSubscriptionGatewayService extends MercadoPagoPl
     }
 
     async getPreapproval(preapprovalId: string): Promise<Record<string, unknown>> {
-        return this.mpFetch<Record<string, unknown>>(`/preapproval/${preapprovalId}`, { method: 'GET' });
+        return this.mpFetch<Record<string, unknown>>(
+            `/preapproval/${preapprovalId}`,
+            { method: 'GET' },
+            { includeApiVersion: false },
+        );
     }
 }

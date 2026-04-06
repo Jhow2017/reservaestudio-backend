@@ -7,7 +7,7 @@
 @password = senha123
 @ownerEmail = jhongama_jesus@hotmail.com
 @ownerPassword = 123456
-@accessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiZmQyZjllMS0zZWQzLTRmNzQtOWNjZC1jZGUzNWE4ZDMyZjYiLCJpYXQiOjE3NzUxODgyNTMsImV4cCI6MTc3NTc5MzA1M30.5Th17znMGtlUKZR74UwPTG3FnsoarGyPgvfDnv4sSx8
+@accessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyOWQ4NzMxMS0xYjY0LTRiMmUtYjMzYy03MDI1NzhiMDMyOGMiLCJpYXQiOjE3NzU0Mzk1MTAsImV4cCI6MTc3NjA0NDMxMH0.3gO1ImMxL9seuPqBLQ11dc7kX_9ifnCMsMphxPYDvV4
 @subscriberEmail = contato@rockvalley.com.br
 @subscriberPassword = 123456
 

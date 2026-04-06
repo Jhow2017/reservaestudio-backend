@@ -1,0 +1,133 @@
+### ======================================================
+### ASSINATURA DA PLATAFORMA — Mercado Pago (fluxo de teste)
+### ======================================================
+### Pré-requisitos (.env):
+### - PLATFORM_SUBSCRIPTION_PROVIDER=mercadopago (ou omita; padrão é mercadopago)
+### - MERCADOPAGO_ACCESS_TOKEN = token de TESTE da conta da aplicação (painel MP)
+### - BACKEND_URL = URL pública da API (ex.: https://xxx.ngrok-free.app) se quiser webhooks reais do MP
+### - FRONTEND_URL
+### Webhook assinatura: POST {BACKEND_URL}/webhooks/mercadopago/subscription
+###   Em desenvolvimento, sem MERCADOPAGO_WEBHOOK_SECRET_KEY o backend aceita corpo sem x-signature.
+###   Com a chave definida, calcule HMAC-SHA256(hex) do corpo RAW em x-signature.
+###
+### ATENÇÃO: cada combinação paymentMethod + rota MP é exclusiva:
+### - PIX ou BOLETO no /start  →  só POST .../mercadopago/transparent-payment
+### - CARD no /start           →  só preapproval + preapproval/card (+ token MP.js na etapa 2)
+### Chamar preapproval com checkout criado como PIX → 400 SubscriptionCheckoutPreapprovalNotCardError
+### ======================================================
+
+@baseUrl = http://localhost:4000
+@subscriberEmail = jhowgama21@gmail.com
+@subscriberPassword = senha123
+### Um slug por tentativa de checkout (409 = subdomínio já usado):
+@subdomainPix = rock-valley-studio
+@subdomainCard = meu-studio-card-001
+@checkoutId = 74ac7d17-7d82-4e5e-8f3a-51dc54c001cc
+@subscriberToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyOWQ4NzMxMS0xYjY0LTRiMmUtYjMzYy03MDI1NzhiMDMyOGMiLCJpYXQiOjE3NzU0Mzk4NDUsImV4cCI6MTc3NjA0NDY0NX0.AnFLSAOg7STckSTn19PxtY-c915KlbPycGQ82bbfWTc
+@ownerToken = COLE_JWT_OWNER_PARA_APPROVE_MANUAL
+
+### ------------------------------------------------------
+### 0) Login do assinante (USER que vai contratar o plano)
+### ------------------------------------------------------
+POST {{baseUrl}}/auth/signin
+Content-Type: application/json
+
+{
+  "email": "{{subscriberEmail}}",
+  "password": "{{subscriberPassword}}"
+}
+
+### ########################################################
+### FLUXO A — PIX (ou BOLETO): transparent-payment apenas
+### ########################################################
+
+### A1) Iniciar checkout com paymentMethod PIX (ou BOLETO)
+POST {{baseUrl}}/subscription-checkout/start
+Authorization: Bearer {{subscriberToken}}
+Content-Type: application/json
+
+{
+  "planTier": "STARTER",
+  "billingCycle": "MONTHLY",
+  "studioName": "Studio Teste MP",
+  "domainType": "SUBDOMAIN",
+  "subdomain": "{{subdomainPix}}",
+  "paymentMethod": "PIX",
+  "totalAmount": 5
+}
+
+### A2) Conferir checkout
+GET {{baseUrl}}/subscription-checkout/{{checkoutId}}
+Authorization: Bearer {{subscriberToken}}
+
+### A3) Criar pagamento PIX/boleto no MP
+POST {{baseUrl}}/subscription-checkout/{{checkoutId}}/mercadopago/transparent-payment
+Authorization: Bearer {{subscriberToken}}
+Content-Type: application/json
+
+{
+  "payerIdentificationType": "CPF",
+  "payerIdentificationNumber": "12345678909"
+}
+
+### ########################################################
+### FLUXO B — CARTÃO: preapproval (não use o mesmo checkout do fluxo A)
+### ########################################################
+
+## B1) NOVO checkout obrigatório com paymentMethod CARD
+POST {{baseUrl}}/subscription-checkout/start
+Authorization: Bearer {{subscriberToken}}
+Content-Type: application/json
+
+{
+  "planTier": "STARTER",
+  "billingCycle": "MONTHLY",
+  "studioName": "Studio Teste MP Card",
+  "domainType": "SUBDOMAIN",
+  "subdomain": "{{subdomainCard}}",
+  "paymentMethod": "CARD",
+  "totalAmount": 5
+}
+
+### B2) Etapa 1 — preapproval pendente (só com checkoutId do B1)
+POST {{baseUrl}}/subscription-checkout/8f9776c8-3943-4631-b1e6-56b7ca3c8ae1/mercadopago/preapproval
+Authorization: Bearer {{subscriberToken}}
+
+### B3) Etapa 2 — token MercadoPago.js
+POST {{baseUrl}}/subscription-checkout/8f9776c8-3943-4631-b1e6-56b7ca3c8ae1/mercadopago/preapproval/card
+Authorization: Bearer {{subscriberToken}}
+Content-Type: application/json
+
+{
+  "cardTokenId": "TOKEN_RETORNADO_PELO_MP.JS"
+}
+
+### ------------------------------------------------------
+### Webhook (simulado em local) — pagamento approved no MP
+### Use paymentId real do fluxo A (transparent) após pagar no sandbox.
+### Com túnel + webhook no painel MP, não precisa disparar manualmente.
+### ------------------------------------------------------
+POST {{baseUrl}}/webhooks/mercadopago/subscription
+Content-Type: application/json
+
+{
+  "type": "payment",
+  "data": { "id": "SUBSTITUA_PELO_PAYMENT_ID_DO_MP" }
+}
+
+### ------------------------------------------------------
+### Aprovar manual (OWNER) — fallback sem webhook
+### ------------------------------------------------------
+POST {{baseUrl}}/subscription-checkout/{{checkoutId}}/approve
+Authorization: Bearer {{ownerToken}}
+Content-Type: application/json
+
+{
+  "paymentReference": "teste-manual-mp-1"
+}
+
+### ------------------------------------------------------
+### Conferir status final do checkout
+### ------------------------------------------------------
+GET {{baseUrl}}/subscription-checkout/{{checkoutId}}
+Authorization: Bearer {{subscriberToken}}

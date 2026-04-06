@@ -43,6 +43,7 @@ Use [.env.example](../.env.example) como referência. Pontos críticos:
 ## Contratos HTTP de teste
 
 - [test/rest-client/subscription-checkout/contract.http](../test/rest-client/subscription-checkout/contract.http)
+- [test/rest-client/subscription-checkout/mercadopago-assinatura.fluxo.http](../test/rest-client/subscription-checkout/mercadopago-assinatura.fluxo.http) — passo a passo MP (PIX/BOLETO, cartão, webhook)
 - [test/rest-client/booking/payments.http](../test/rest-client/booking/payments.http)
 - [test/rest-client/financeiro/payout-provider.http](../test/rest-client/financeiro/payout-provider.http)
 - [test/rest-client/mercadopago/oauth-and-webhooks.http](../test/rest-client/mercadopago/oauth-and-webhooks.http)

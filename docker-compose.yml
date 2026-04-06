@@ -42,6 +42,9 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
+    # Host → container: necessário para Prisma/Nest rodando fora do Docker (DATABASE_URL com localhost:5433)
+    ports:
+      - "5433:5432"
     networks:
       - app
 
